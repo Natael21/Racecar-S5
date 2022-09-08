@@ -10,6 +10,10 @@ from struct import*
 
 class ROSMonitor:
     def __init__(self):
+
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Socket UDP
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+
         self.lidar = rospy.Subscriber("/scan", LaserScan, self.getDistance)
         self.odometrie = rospy.Subscriber("/odometry/filtered", Odometry, self.getOdometry)
         self.timer = rospy.Timer(rospy.Duration(1.0), self.timer_cb)
@@ -33,8 +37,8 @@ class ROSMonitor:
 
     def rr_loop(self):
         # Init your socket here :
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Socket UDP
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # Mode broadcast
+        #s.self = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Socket UDP
+        #s.self.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # Mode broadcast
         
         while True:
             #enc = pack(format, self.pos[0], self.pos[1], self.pos[2], self.id)
@@ -50,7 +54,16 @@ class ROSMonitor:
     def getDistance(self, distance):
         #self.obstacle = distance.ranges
         print(distance)
-            
+
+    def timer_cb(self):
+        #self.id = 0xFFFF
+        #self.pos = (0,0,0)
+        format1 = "fffI"
+        enc = pack(format1, self.pos[0], self.pos[1], self.pos[2], self.id)
+        self.s.send(enc)
+
+
+
 if __name__=="__main__":
     # rospy.init_node("ros_monitor")
 

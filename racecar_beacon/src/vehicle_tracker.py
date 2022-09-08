@@ -19,9 +19,9 @@ class PositionBroadcast:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             s.connect((HOST, PORT))
             #s.listen(1)
-            data = s.recvfrom(16)
-            format = "fffxxxx"
-            cmd = unpack(format, data)
+            self.data = s.recvfrom(16)
+            format = "fffI"
+            cmd = unpack(format, self.data)
             print(cmd)
             #s.send(bytearray(self.ipAdress))
             #self.msg_ROS = s.recv(1024)
@@ -30,4 +30,6 @@ class PositionBroadcast:
 
 
 if __name__ == "__main__":
- user = PositionBroadcast()
+    user = PositionBroadcast()
+
+    user.start()
