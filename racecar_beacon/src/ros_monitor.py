@@ -6,17 +6,21 @@ import threading
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
+from struct import*
 
 class ROSMonitor:
     def __init__(self):
-        # Add your subscriber here (odom? laserscan?):
-        # self.sub_odom = rospy.Subcriber(...)
-        # self.sub_laser = rospy.Subscriber(...)
+        self.lidar = rospy.Subscriber("/scan", LaserScan, self.getDistance)
+        self.odometrie = rospy.Subscriber("/odometry/filtered", Odometry, self.getOdometry)
+        self.timer = rospy.Timer(rospy.Duration(1.0), self.timer_cb)
 
         # Current robot state:
+        # put the 10.0.1.31 for the id !
         self.id = 0xFFFF
+        # *************************
         self.pos = (0,0,0)
         self.obstacle = False
+        format = "fffd" # 3 float32 et 1 uint32
 
         # Params :
         self.remote_request_port = rospy.get_param("remote_request_port", 65432)
@@ -29,10 +33,24 @@ class ROSMonitor:
 
     def rr_loop(self):
         # Init your socket here :
-        # self.rr_socket = socket.Socket(...)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Socket UDP
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # Mode broadcast
+        
         while True:
-            pass
-
+            #enc = pack(format, self.pos[0], self.pos[1], self.pos[2], self.id)
+            #s.send(enc)
+            print("allo")
+            # Modifiy to send the data at a rate of 1 Hz
+            #pass
+    
+    def getOdometry(self, message):
+        #self.pos = (message.pos.pos.x, message.pos.pos.y, message.pos.pos.z)
+        print(message)
+    
+    def getDistance(self, distance):
+        #self.obstacle = distance.ranges
+        print(distance)
+            
 if __name__=="__main__":
     rospy.init_node("ros_monitor")
 
