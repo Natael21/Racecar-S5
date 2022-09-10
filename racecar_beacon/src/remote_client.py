@@ -63,8 +63,8 @@ class userScreen:
     #         print(data)
     #         s.close() 
         #apres avoir envoyer un message qui marche, il faut donner la possibilite au client de fermer la connexion
-    # def stop (self):
-    #     print("Dont stop, believing")
+    def stop (self):
+        print("Dont stop, believing")
 
     def getIP(self):
         print(self.ipAdress)
