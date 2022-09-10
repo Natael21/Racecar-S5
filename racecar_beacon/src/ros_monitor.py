@@ -8,19 +8,21 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 from struct import*
 
+HOST = '127.0.0.1'
+PORT = 65432
+
 class ROSMonitor:
     def __init__(self):
         self.lidar = rospy.Subscriber("/scan", LaserScan, self.getDistance)
         self.odometrie = rospy.Subscriber("/odometry/filtered", Odometry, self.getOdometry)
-        self.timer = rospy.Timer(rospy.Duration(1.0), self.timer_cb)
 
         # Current robot state:
         # put the 10.0.1.31 for the id !
         self.id = 0xFFFF
         # *************************
-        self.pos = (0,0,0)
+        self.pos = (1,2,3)
         self.obstacle = False
-        format = "fffd" # 3 float32 et 1 uint32
+        self.format = "fffd" # 3 float32 et 1 uint32
 
         # Params :
         self.remote_request_port = rospy.get_param("remote_request_port", 65432)
@@ -42,6 +44,27 @@ class ROSMonitor:
             print("allo")
             # Modifiy to send the data at a rate of 1 Hz
             #pass
+
+    def getInfoClient(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((HOST, PORT))
+        s.listen(1)
+        while True:
+            (conn, addr) = s.accept()
+            data = conn.recv(1024)
+            data = (unpack(">4s", data)[0]).decode('utf-8')
+            if data == "RPOS":
+                data = pack(self.format, self.pos[0], self.pos[1], self.pos[2], 0)
+            elif data == "OBSF":
+                data = self.obstacle
+            elif data == "RBID":
+                data = self.id
+
+            if not data: break
+            conn.send(data)
+        conn.close()
+        s.close()
+            
     
     def getOdometry(self, message):
         #self.pos = (message.pos.pos.x, message.pos.pos.y, message.pos.pos.z)
@@ -52,21 +75,12 @@ class ROSMonitor:
         print(distance)
             
 if __name__=="__main__":
-    # rospy.init_node("ros_monitor")
+    rospy.init_node("ros_monitor")
 
-    # node = ROSMonitor()
+    node = ROSMonitor()
+    node.getInfoClient()
 
-    # rospy.spin()
+    rospy.spin()
 
-    HOST = '127.0.0.1'
-    PORT = 65432
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((HOST, PORT))
-    s.listen(1)
-    while True:
-        (conn, addr) = s.accept()
-        data =conn.recv(1024)
-        if not data: break
-        conn.send(data+b"*")
-    conn.close()
+
 

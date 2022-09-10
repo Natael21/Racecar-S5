@@ -19,8 +19,8 @@ class userScreen:
     # variables of interest
         self.ipAdress = 0
         self.info = ''
-        self.msg_ROS = ""
         self.exit = ""
+        self.format = "fffx"
 
     def userInfo(self):
         while True:
@@ -51,10 +51,9 @@ class userScreen:
     def start_stop(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((HOST, PORT))
-        print(self.info)
         s.send(self.info)
-        self.msg_ROS = s.recv(1024)
-        print(self.msg_ROS)
+        self.msg_ROS = unpack(self.format, s.recv(1024))
+        print(self.msg_ROS[0])
         s.close()
 
     def getIP(self):
