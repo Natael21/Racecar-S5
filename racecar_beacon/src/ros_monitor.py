@@ -7,6 +7,7 @@ import threading
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 from struct import*
+import struct
 
 HOST = '127.0.0.1'
 PORT = 65432
@@ -22,7 +23,7 @@ class ROSMonitor:
         # *************************
         self.pos = (1,2,3)
         self.obstacle = False
-        self.format = "fffd" # 3 float32 et 1 uint32
+        self.format = "fffI" # 3 float32 et 1 uint32
 
         # Params :
         self.remote_request_port = rospy.get_param("remote_request_port", 65432)
@@ -51,17 +52,18 @@ class ROSMonitor:
         s.listen(1)
         while True:
             (conn, addr) = s.accept()
-            data = conn.recv(1024)
+            data = conn.recv(128)
             data = (unpack(">4s", data)[0]).decode('utf-8')
             if data == "RPOS":
-                data = pack(self.format, self.pos[0], self.pos[1], self.pos[2], 0)
+                self.info = struct.pack(self.format, self.pos[0], self.pos[1], self.pos[2],0)
             elif data == "OBSF":
-                data = self.obstacle
+                self.info = self.obstacle
             elif data == "RBID":
-                data = self.id
+                self.info = self.id
 
-            if not data: break
-            conn.send(data)
+            if not data: 
+                break
+            conn.send(self.info)
         conn.close()
         s.close()
             

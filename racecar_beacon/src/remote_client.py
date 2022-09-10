@@ -5,7 +5,7 @@ from os import kill
 import socket
 import time 
 import sys
-
+import struct
 from struct import*
  
 # On donne adresse du pi qui va prendre la position du RemoteClient
@@ -20,7 +20,7 @@ class userScreen:
         self.ipAdress = 0
         self.info = ''
         self.exit = ""
-        self.format = "fffx"
+        self.format = "fffI"
 
     def userInfo(self):
         while True:
@@ -52,8 +52,11 @@ class userScreen:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((HOST, PORT))
         s.send(self.info)
-        self.msg_ROS = unpack(self.format, s.recv(1024))
-        print(self.msg_ROS[0])
+        self.rosInfo = s.recv(128)
+        print(self.rosInfo)
+        # self.msg_ROS = struct.unpack(self.format, self.rosInfo)
+        # print(self.msg_ROS)
+        print(struct.unpack(self.format, self.rosInfo))
         s.close()
 
     def getIP(self):
