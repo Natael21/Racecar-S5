@@ -52,10 +52,21 @@ class ROSMonitor:
         print(distance)
             
 if __name__=="__main__":
-    rospy.init_node("ros_monitor")
+    # rospy.init_node("ros_monitor")
 
-    node = ROSMonitor()
+    # node = ROSMonitor()
 
-    rospy.spin()
+    # rospy.spin()
 
+    HOST = '127.0.0.1'
+    PORT = 65432
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((HOST, PORT))
+    s.listen(1)
+    while True:
+        (conn, addr) = s.accept()
+        data =conn.recv(1024)
+        if not data: break
+        conn.send(data+b"*")
+    conn.close()
 
