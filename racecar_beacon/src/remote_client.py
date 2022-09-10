@@ -1,8 +1,10 @@
 #!/usr/bin/env python
  
 from ast import IsNot
+from os import kill
 import socket
 import time 
+import sys
 
 from struct import*
  
@@ -18,53 +20,42 @@ class userScreen:
         self.ipAdress = 0
         self.info = ''
         self.msg_ROS = ""
+        self.exit = ""
 
     def userInfo(self):
         while True:
+            self.exit = input("Do you want continue(0) or exit(1): ")
+            if self.exit == str(1):
+                sys.exit()
+
             self.ipAdress = input("IP Adress you search for (XX.XX.XX.XX): ")
-            break
+            time.sleep(0.5)
 
-        time.sleep(0.5)
-
-        while True:
             self.info = input("What info do you you want to acces (RPOS, OBSF, RBID): ")
-            print(self.info)
-            if self.info != "RPOS":
+            # print(self.info)
+            if self.info == "RPOS":
+                self.info = pack(">4s", b"RPOS")
+                break
+            elif self.info == "OBSF":
+                self.info = pack(">4s", b"RPOS")
+                break
+            elif self.info == "RBID":
+                self.info = pack(">4s", b"RPOS")
+                break
+            else :  
                 print("This is not an option")
                 continue
-            # elif self.info != "OBSF":
-            #     print("This is not an option")
-            #     continue
-            # elif self.info != "RBID":
-            #     print("This is not an option")
-            #     continue
-            else :  
-                break
 
-        time.sleep(0.5)
+        # self.info = pack(">4s", bytearray(str(self.info)))
 
-    def start(self):
+    def start_stop(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((HOST, PORT))
-        s.send(bytearray(self.ipAdress))
+        print(self.info)
+        s.send(self.info)
         self.msg_ROS = s.recv(1024)
         print(self.msg_ROS)
         s.close()
-     
-    # def clientStart(self): 
-    #     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #     s.connect((HOST, PORT))
-    #     s.send(bytearray(self.getIP()))
-    #     data = s.recv(1024)
-    #     #verifie si on a envoyer une adresse ip et une information valide
-    #     while not data:
-    #         print("Where is the data bro?")
-    #     if data : 
-    #         print(data)
-    #         s.close() 
-        #apres avoir envoyer un message qui marche, il faut donner la possibilite au client de fermer la connexion
-    def stop (self):
-        print("Dont stop, believing")
 
     def getIP(self):
         print(self.ipAdress)
@@ -75,15 +66,7 @@ class userScreen:
  
 if __name__ == "__main__":
     user = userScreen()
-    user.userInfo()
-    user.start()
-    # user.getIP()
-    # user.getInfo()
 
-    #A des fins de test seulement quand on utiliser adresse 127.0.0.1
-    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # s.connect((HOST, PORT))
-    # s.send(b"hello")
-    # data = s.recv(1024)
-    # print(data)
-    # s.close()
+    while True:
+        user.userInfo()
+        user.start_stop()
