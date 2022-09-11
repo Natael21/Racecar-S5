@@ -19,11 +19,12 @@ class ROSMonitor:
 
         # Current robot state:
         # put the 10.0.1.31 for the id !
-        self.id = 0xFFFF
+        self.id = 0xFFFF 
         # *************************
         self.pos = (1,2,3)
         self.obstacle = False
-        self.format = "fffI" # 3 float32 et 1 uint32
+        self.format = "fffxxxx" # 3 float32 et 1 uint32
+        self.format2 = "Ixxxxxxxxxxxx" 
 
         # Params :
         self.remote_request_port = rospy.get_param("remote_request_port", 65432)
@@ -53,13 +54,15 @@ class ROSMonitor:
         while True:
             (conn, addr) = s.accept()
             data = conn.recv(128)
-            data = (unpack(">4s", data)[0]).decode('utf-8')
+
+            data = unpack(">4s", data).decode('utf-8')
+        
             if data == "RPOS":
-                self.info = struct.pack(self.format, self.pos[0], self.pos[1], self.pos[2],0)
+                self.info = struct.pack(self.format, self.pos[0], self.pos[1], self.pos[2])
             elif data == "OBSF":
-                self.info = self.obstacle
+                self.info = struct.pack(self.format2, self.obstacle)
             elif data == "RBID":
-                self.info = self.id
+                struct.pack(self.format2, self.id)
 
             if not data: 
                 break

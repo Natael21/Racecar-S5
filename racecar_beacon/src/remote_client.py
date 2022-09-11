@@ -53,10 +53,9 @@ class userScreen:
         s.connect((HOST, PORT))
         s.send(self.info)
         self.rosInfo = s.recv(128)
-        print(self.rosInfo)
-        # self.msg_ROS = struct.unpack(self.format, self.rosInfo)
-        # print(self.msg_ROS)
-        print(struct.unpack(self.format, self.rosInfo))
+
+        self.msg_ROS = struct.unpack(self.format, self.rosInfo)
+        print(self.msg_ROS[0])
         s.close()
 
     def getIP(self):
