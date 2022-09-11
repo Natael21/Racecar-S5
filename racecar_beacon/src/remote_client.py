@@ -2,6 +2,7 @@
  
 from ast import IsNot
 from os import kill
+import os
 import socket
 import time 
 import sys
@@ -17,42 +18,48 @@ PORT = 65432
 class userScreen:
     def __init__(self):
     # variables of interest
-        self.ipAdress = 0
+        self.ipAdress = 'sfsdgdsg'
         self.info = ''
         self.exit = ""
         self.format = "fffxxxx"
 
     def userInfo(self):
-        while True:
             self.exit = input("Do you want continue(0) or exit(1): ")
             if self.exit == str(1):
                 sys.exit()
 
             self.ipAdress = input("IP Adress you search for (XX.XX.XX.XX): ")
 
-            self.info = input("What info do you you want to acces (RPOS, OBSF, RBID): ")
-            # print(self.info)
-            if self.info == "RPOS":
-                self.info = pack(">4s", b"RPOS")
-                self.format = "fffxxxx"
-                break
-            elif self.info == "OBSF":
-                self.info = pack(">4s", b"OBSF")
-                self.format = "Ixxxxxxxxxxxx"
-                break
-            elif self.info == "RBID":
-                self.info = pack(">4s", b"RBID")
-                self.format = "Ixxxxxxxxxxxx"
-                break
-            else :  
-                print("This is not an option")
-                continue
+            while True:
+                self.info = input("What info do you you want to acces (RPOS, OBSF, RBID): ")
 
-    def start_stop(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((HOST, PORT))
-        s.send(self.info)
-        self.rosInfo = s.recv(16)
+                if self.info == "RPOS":
+                    self.info = pack(">4s", b"RPOS")
+                    self.format = "fffxxxx"
+                    break
+                elif self.info == "OBSF":
+                    self.info = pack(">4s", b"OBSF")
+                    self.format = "Ixxxxxxxxxxxx"
+                    break
+                elif self.info == "RBID":
+                    self.info = pack(">4s", b"RBID")
+                    self.format = "Ixxxxxxxxxxxx"
+                    break
+                else :  
+                    print("This is not an option")
+                    continue
+    
+    def test_connection(self):
+        try:
+            self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.s.connect((self.ipAdress, PORT))
+            self.s.send(self.info)
+        except:
+            print("The IP address is wrong")
+            sys.exit()
+
+    def receive_data(self):
+        self.rosInfo = self.s.recv(16)
         self.info = (unpack(">4s", self.info)[0]).decode('utf-8')
 
         self.msg_ROS = struct.unpack(self.format, self.rosInfo)
@@ -68,7 +75,8 @@ class userScreen:
 
         elif self.info == "RBID":
                 print("ID véhicule: ", self.msg_ROS[0], "\n")
-        s.close()
+
+        self.s.close()
 
     def getIP(self):
         print(self.ipAdress)
@@ -82,4 +90,5 @@ if __name__ == "__main__":
 
     while True:
         user.userInfo()
-        user.start_stop()
+        user.test_connection()
+        user.receive_data()

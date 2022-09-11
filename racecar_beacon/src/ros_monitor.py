@@ -19,7 +19,7 @@ class ROSMonitor:
 
         # Current robot state:
         # put the 10.0.1.31 for the id !
-        self.id = 3 
+        self.id = 0xFFFF
         # *************************
         self.pos = (0,0,0)
         self.obstacle = 0
@@ -63,6 +63,8 @@ class ROSMonitor:
                 self.info = struct.pack(self.format2, self.obstacle)
             elif data == "RBID":
                 self.info = struct.pack(self.format2, self.id)
+            else:
+                self.info = struct.pack(self.format2, 1)
 
             if not data: 
                 break
