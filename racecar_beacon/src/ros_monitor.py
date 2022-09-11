@@ -11,12 +11,13 @@ from struct import*
 class ROSMonitor:
     def __init__(self):
 
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Socket UDP
-        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        #self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Socket UDP
+        #self.s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
         self.lidar = rospy.Subscriber("/scan", LaserScan, self.getDistance)
         self.odometrie = rospy.Subscriber("/odometry/filtered", Odometry, self.getOdometry)
         self.timer = rospy.Timer(rospy.Duration(1.0), self.timer_cb)
+
 
         # Current robot state:
         # put the 10.0.1.31 for the id !
@@ -48,28 +49,27 @@ class ROSMonitor:
             #pass
     
     def getOdometry(self, message):
-        #self.pos = (message.pos.pos.x, message.pos.pos.y, message.pos.pos.z)
-        print(message)
+        self.pos = (message.pose.pose.position.x, message.pose.pose.position.y, message.pose.pose.position.z)
+        #print(message)
     
     def getDistance(self, distance):
-        #self.obstacle = distance.ranges
-        print(distance)
+        self.obstacle = distance.ranges
+        #print(distance)
 
-    def timer_cb(self):
-        #self.id = 0xFFFF
-        #self.pos = (0,0,0)
+    def timer_cb(self, s):
         format1 = "fffI"
+        #print(self.pos[0])
         enc = pack(format1, self.pos[0], self.pos[1], self.pos[2], self.id)
-        self.s.send(enc)
+        s.send(enc)
 
 
 
 if __name__=="__main__":
-    # rospy.init_node("ros_monitor")
+    rospy.init_node("ros_monitor")
 
-    # node = ROSMonitor()
+    node = ROSMonitor()
 
-    # rospy.spin()
+    rospy.spin()
 
     HOST = '127.0.0.1'
     PORT = 65432

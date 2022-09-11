@@ -19,7 +19,7 @@ class PositionBroadcast:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             s.connect((HOST, PORT))
             #s.listen(1)
-            self.data = s.recvfrom(16)
+            self.data = s.recv(1024)
             format = "fffI"
             cmd = unpack(format, self.data)
             print(cmd)
