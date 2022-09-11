@@ -20,7 +20,7 @@ class userScreen:
         self.ipAdress = 0
         self.info = ''
         self.exit = ""
-        self.format = "fffI"
+        self.format = "fffxxxx"
 
     def userInfo(self):
         while True:
@@ -29,33 +29,45 @@ class userScreen:
                 sys.exit()
 
             self.ipAdress = input("IP Adress you search for (XX.XX.XX.XX): ")
-            time.sleep(0.5)
 
             self.info = input("What info do you you want to acces (RPOS, OBSF, RBID): ")
             # print(self.info)
             if self.info == "RPOS":
                 self.info = pack(">4s", b"RPOS")
+                self.format = "fffxxxx"
                 break
             elif self.info == "OBSF":
-                self.info = pack(">4s", b"RPOS")
+                self.info = pack(">4s", b"OBSF")
+                self.format = "Ixxxxxxxxxxxx"
                 break
             elif self.info == "RBID":
-                self.info = pack(">4s", b"RPOS")
+                self.info = pack(">4s", b"RBID")
+                self.format = "Ixxxxxxxxxxxx"
                 break
             else :  
                 print("This is not an option")
                 continue
 
-        # self.info = pack(">4s", bytearray(str(self.info)))
-
     def start_stop(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((HOST, PORT))
         s.send(self.info)
-        self.rosInfo = s.recv(128)
+        self.rosInfo = s.recv(16)
+        self.info = (unpack(">4s", self.info)[0]).decode('utf-8')
 
         self.msg_ROS = struct.unpack(self.format, self.rosInfo)
-        print(self.msg_ROS[0])
+
+        if self.info == "RPOS":
+                print(" Postion x : ", self.msg_ROS[0], "\n", "Position y : ", self.msg_ROS[1], "\n", "Position z : ", self.msg_ROS[2], "\n")
+
+        elif self.info == "OBSF":
+            if self.msg_ROS == 1:
+                print("Obstacle : oui \n")
+            else :
+                print("Obstacle : non \n")
+
+        elif self.info == "RBID":
+                print("ID véhicule: ", self.msg_ROS[0], "\n")
         s.close()
 
     def getIP(self):

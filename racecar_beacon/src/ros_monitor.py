@@ -19,10 +19,10 @@ class ROSMonitor:
 
         # Current robot state:
         # put the 10.0.1.31 for the id !
-        self.id = 0xFFFF 
+        self.id = 3 
         # *************************
-        self.pos = (1,2,3)
-        self.obstacle = False
+        self.pos = (0,0,0)
+        self.obstacle = 0
         self.format = "fffxxxx" # 3 float32 et 1 uint32
         self.format2 = "Ixxxxxxxxxxxx" 
 
@@ -53,16 +53,16 @@ class ROSMonitor:
         s.listen(1)
         while True:
             (conn, addr) = s.accept()
-            data = conn.recv(128)
+            data = conn.recv(16)
 
-            data = unpack(">4s", data).decode('utf-8')
+            data = (unpack(">4s", data)[0]).decode('utf-8')
         
             if data == "RPOS":
                 self.info = struct.pack(self.format, self.pos[0], self.pos[1], self.pos[2])
             elif data == "OBSF":
                 self.info = struct.pack(self.format2, self.obstacle)
             elif data == "RBID":
-                struct.pack(self.format2, self.id)
+                self.info = struct.pack(self.format2, self.id)
 
             if not data: 
                 break
