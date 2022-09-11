@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from turtle import pos
 import rospy
 import socket
 import threading
@@ -11,13 +12,29 @@ from struct import*
 class ROSMonitor:
     def __init__(self):
 
-        #self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Socket UDP
-        #self.s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-
         self.lidar = rospy.Subscriber("/scan", LaserScan, self.getDistance)
         self.odometrie = rospy.Subscriber("/odometry/filtered", Odometry, self.getOdometry)
         self.timer = rospy.Timer(rospy.Duration(1.0), self.timer_cb)
 
+
+        HOST = '127.0.0.1'
+        PORT_remote_client = 65432
+        self.s_remote_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s_remote_client.bind((HOST, PORT_remote_client))
+        self.s_remote_client.listen(1)
+
+        # while True:
+        #     (conn, addr) = self.s_remote_client.accept()
+        #     data =conn.recv(1024)
+        #     if not data: break
+        #     conn.send(data+b"*")
+        # conn.close()
+
+        PORT_vehicle_tracker = 65431
+        self.s_vehicle_tracker = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) # Socket UDP
+        self.s_vehicle_tracker.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        self.s_vehicle_tracker.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.s_vehicle_tracker.bind((HOST, PORT_vehicle_tracker))
 
         # Current robot state:
         # put the 10.0.1.31 for the id !
@@ -37,16 +54,10 @@ class ROSMonitor:
         print("ROSMonitor started.")
 
     def rr_loop(self):
-        # Init your socket here :
-        #s.self = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Socket UDP
-        #s.self.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # Mode broadcast
         
         while True:
-            #enc = pack(format, self.pos[0], self.pos[1], self.pos[2], self.id)
-            #s.send(enc)
             print("allo")
             # Modifiy to send the data at a rate of 1 Hz
-            #pass
     
     def getOdometry(self, message):
         self.pos = (message.pose.pose.position.x, message.pose.pose.position.y, message.pose.pose.position.z)
@@ -56,11 +67,14 @@ class ROSMonitor:
         self.obstacle = distance.ranges
         #print(distance)
 
-    def timer_cb(self, s):
+    def timer_cb(self, msg):
         format1 = "fffI"
+        PORT_vehicle_tracker = 65431
         #print(self.pos[0])
         enc = pack(format1, self.pos[0], self.pos[1], self.pos[2], self.id)
-        s.send(enc)
+        #print(self.pos[0], " ", self.pos[1], " ", self.pos[2], " ", self.id)
+        #print(self.id)
+        self.s_vehicle_tracker.sendto(enc, ('<broadcast>', PORT_vehicle_tracker))
 
 
 
@@ -70,16 +84,3 @@ if __name__=="__main__":
     node = ROSMonitor()
 
     rospy.spin()
-
-    HOST = '127.0.0.1'
-    PORT = 65432
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((HOST, PORT))
-    s.listen(1)
-    while True:
-        (conn, addr) = s.accept()
-        data =conn.recv(1024)
-        if not data: break
-        conn.send(data+b"*")
-    conn.close()
-
