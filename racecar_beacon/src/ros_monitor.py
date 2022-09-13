@@ -102,4 +102,5 @@ if __name__=="__main__":
 
     rospy.init_node("ros_monitor")
     node = ROSMonitor()
+    node.getInfoClient()
     rospy.spin()
