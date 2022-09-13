@@ -6,7 +6,7 @@ import struct
 from time import sleep
 
 
-HOST = '127.0.0.1'
+HOST = '10.0.1.255'
 # This process should listen to a different port than the RemoteRequest client.
 PORT = 65431
 
@@ -23,7 +23,7 @@ class PositionBroadcast:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            s.bind(("", PORT))
+            s.bind((HOST, PORT))
             
             data = s.recv(16)
             format = "fffI"
