@@ -10,7 +10,7 @@ from sensor_msgs.msg import LaserScan
 from struct import*
 import struct
 
-HOST = '127.0.0.1'
+HOST_CAR = '10.0.1.31'
 PORT = 65432
 
 class ROSMonitor:
@@ -35,7 +35,7 @@ class ROSMonitor:
         self.s_vehicle_tracker.bind((HOST, PORT_vehicle_tracker))
 
         # Current robot state:
-        self.id = 0xFFFF
+        self.id = 3
         # *************************
         self.pos = (0,0,0)
         self.obstacle = 0
@@ -55,7 +55,7 @@ class ROSMonitor:
 
     def getInfoClient(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((HOST, PORT))
+        s.bind((HOST_CAR, PORT))
         s.listen(1)
         while True:
             (conn, addr) = s.accept()

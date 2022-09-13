@@ -10,7 +10,7 @@ import struct
 from struct import*
  
 # On donne adresse du pi qui va prendre la position du RemoteClient
-HOST = '127.0.0.1'
+# HOST = '127.0.0.1'
 # This process should listen to a different port than the PositionBroadcast client.
 # Ca ca veut dire quil faut quon soit sur un meme pi, mais que le port va changer pour les deux
 PORT = 65432
