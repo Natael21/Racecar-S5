@@ -1,5 +1,5 @@
-#!/usr/bin/env python
- 
+#!/usr/bin/env python 
+
 from ast import IsNot
 from os import kill
 import os
@@ -14,14 +14,18 @@ from struct import*
 # This process should listen to a different port than the PositionBroadcast client.
 # Ca ca veut dire quil faut quon soit sur un meme pi, mais que le port va changer pour les deux
 PORT = 65432
- 
+
+
 class userScreen:
+
     def __init__(self):
+
     # variables of interest
         self.ipAdress = 'sfsdgdsg'
         self.info = ''
         self.exit = ""
-        self.format = "fffxxxx"
+        self.format = ">fffxxxx"
+
 
     def userInfo(self):
             self.exit = input("Do you want continue(0) or exit(1): ")
@@ -30,25 +34,26 @@ class userScreen:
 
             self.ipAdress = input("IP Adress you search for (XX.XX.XX.XX): ")
 
+
+
             while True:
                 self.info = input("What info do you you want to acces (RPOS, OBSF, RBID): ")
-
                 if self.info == "RPOS":
                     self.info = pack(">4s", b"RPOS")
-                    self.format = "fffxxxx"
+                    self.format = ">fffxxxx"
                     break
                 elif self.info == "OBSF":
                     self.info = pack(">4s", b"OBSF")
-                    self.format = "Ixxxxxxxxxxxx"
+                    self.format = ">Ixxxxxxxxxxxx"
                     break
                 elif self.info == "RBID":
                     self.info = pack(">4s", b"RBID")
-                    self.format = "Ixxxxxxxxxxxx"
+                    self.format = ">Ixxxxxxxxxxxx"
                     break
                 else :  
                     print("This is not an option")
                     continue
-    
+  
     def test_connection(self):
         try:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -58,33 +63,34 @@ class userScreen:
             print("The IP address is wrong")
             sys.exit()
 
+
+
     def receive_data(self):
         self.rosInfo = self.s.recv(16)
         self.info = (unpack(">4s", self.info)[0]).decode('utf-8')
-
-        self.msg_ROS = struct.unpack(self.format, self.rosInfo)
+        self.msg_ROS = struct.unpack(self.format, self.rosInfo)     
+        texte = "x : {0:.2f} \ny : {1:.2f} \ntheta : {2:.2f} \n"
 
         if self.info == "RPOS":
-                print(" Postion x : ", self.msg_ROS[0], "\n", "Position y : ", self.msg_ROS[1], "\n", "Position z : ", self.msg_ROS[2], "\n")
-
+                print(texte.format(self.msg_ROS[0], self.msg_ROS[1], self.msg_ROS[2]))
         elif self.info == "OBSF":
-            if self.msg_ROS == 1:
+            if self.msg_ROS[0] == 1:
                 print("Obstacle : oui \n")
             else :
                 print("Obstacle : non \n")
-
         elif self.info == "RBID":
-                print("ID véhicule: ", self.msg_ROS[0], "\n")
+            print("ID véhicule: ", self.msg_ROS[0], "\n")
 
         self.s.close()
 
     def getIP(self):
         print(self.ipAdress)
-    
+
     def getInfo(self):
         infoList = self.info
         print(infoList) 
- 
+
+
 if __name__ == "__main__":
     user = userScreen()
 
