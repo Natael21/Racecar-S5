@@ -8,14 +8,18 @@ import threading
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 from struct import*
+import struct
+
+HOST = '127.0.0.1'
+PORT = 65432
 
 class ROSMonitor:
 
     def __init__(self):
-
         self.lidar = rospy.Subscriber("/racecar/scan", LaserScan, self.getDistance)
         self.odometrie = rospy.Subscriber("/racecar/odometry/filtered", Odometry, self.getOdometry)
         self.timer = rospy.Timer(rospy.Duration(1.0), self.timer_cb)
+
 
         HOST = '10.0.1.255'
         #HOST = '127.0.0.1'
@@ -34,8 +38,9 @@ class ROSMonitor:
         self.id = 0xFFFF
         # *************************
         self.pos = (0,0,0)
-        self.obstacle = False
-        format = "fffd" # 3 float32 et 1 uint32
+        self.obstacle = 0
+        self.format = "fffxxxx" # 3 float32 et 1 uint32
+        self.format2 = "Ixxxxxxxxxxxx" 
 
 
         # Params :
@@ -48,6 +53,32 @@ class ROSMonitor:
         print("ROSMonitor started.")
     
 
+    def getInfoClient(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((HOST, PORT))
+        s.listen(1)
+        while True:
+            (conn, addr) = s.accept()
+            data = conn.recv(16)
+
+            data = (unpack(">4s", data)[0]).decode('utf-8')
+        
+            if data == "RPOS":
+                self.info = struct.pack(self.format, self.pos[0], self.pos[1], self.pos[2])
+            elif data == "OBSF":
+                self.info = struct.pack(self.format2, self.obstacle)
+            elif data == "RBID":
+                self.info = struct.pack(self.format2, self.id)
+            else:
+                self.info = struct.pack(self.format2, 1)
+
+            if not data: 
+                break
+            conn.send(self.info)
+        conn.close()
+        s.close()
+            
+    
     def getOdometry(self, message):
         self.pos = (message.pose.pose.position.x, message.pose.pose.position.y, message.pose.pose.position.z)
         #print(message)
