@@ -190,15 +190,13 @@ Client-side:
         document.getElementById('text_area').value = '';
       }
 
-      // Define some functions
-      function connectROS() {
+      // Define some functions1
+      function connectROS(adresse_ip) {
         // This function connects to the rosbridge server
 
 	    rbServer = new ROSLIB.Ros({
         // Assuming ros server IP is 10.42.0.1
-	      // url : 'ws://10.42.0.1:9090'
-        ros: ros, name: '/stream1/image/compressed',
-        messageType: 'sensor_msgs/CompressedImage'
+	      url : 'ws://adresse_ip'
 	    });
 
         rbServer.on('connection', function(){
@@ -224,7 +222,12 @@ Client-side:
 	    });
       }
 
-      image_topic.subscribe(function(message) {
+      racecar_video = new ROSLIB.Ros({
+        ros: ros, name: '/stream1/image/compressed',
+        messageType: 'sensor_msgs/CompressedImage'
+	    });
+
+      racecar_video.subscribe(function(message) {
         document.getElementById('image_racecar').src = "data:image/jpg;base64," + message.data;
         image_topic.unsubscribe();
       });
