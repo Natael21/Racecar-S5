@@ -101,7 +101,7 @@ Client-side:
       <p class="text-white">ROS master IP:</p>
       <input class="text" id="input_ip" name="input_ip">
       <br>
-      <button class="button button2" onclick="connectROS(document.getElementById('input_ip').value)">Connectez!</button>
+      <button class="button button2" onclick="connectROS()">Connectez!</button>
     </div>
   </div>
 
@@ -127,7 +127,7 @@ Client-side:
                 <textarea id="text_area" name="text_area" disabled></textarea>
               </div>
               <div class="row">
-                <button class="button button1" onclick="bouton_effacer()">Effacer</button>
+                <button class="button button1" id="effacer" onclick="bouton_effacer()">Effacer</button>
               </div>
             </div>
           </div>
@@ -135,8 +135,8 @@ Client-side:
             <div class="col-auto">
               <h1>Contrôle</h1>
               <div class="row">
-                <button class="button button1" onclick="bouton_avancer()">Avancer</button>
-                <button class="button button1" onclick="bouton_arreter()">Arrêter</button>
+                <button class="button button1" id="avancer" onclick="bouton_avancer()" disabled>Avancer</button>
+                <button class="button button1" id="arreter" onclick="bouton_arreter()" disabled>Arrêter</button>
               </div>
           </div>
           </div>  
@@ -150,7 +150,7 @@ Client-side:
           </div>
           <div class="row">
             <!-- <img id="image_racecar"> -->
-            <img id="image_racecar" style='height: 100%; width: 100%; object-fit: contain' src="image_chien.jpg">
+            <img id="image_racecar" style='height: 100%; width: 100%; object-fit: contain' src="image_chien.png">
           </div>
         </div>
       </div>
@@ -173,12 +173,27 @@ Client-side:
 
       //Some initializations after the page has been shown
       $(document).ready(function(){
-        document.getElementById("log").value = 'Default text\n'
+        //document.getElementById("log").value = 'Default text\n'
+      });
+      
+            // These lines create a message that conforms to the structure of the Twist defined in our ROS installation
+      // It initalizes all properties to zero. They will be set to appropriate values before we publish this message.
+      var twist = new ROSLIB.Message({
+           linear : {
+                x : 0.0,
+                y : 0.0,
+                z : 0.0
+            },
+            angular : {
+                x : 0.0,
+                y : 0.0,
+                z : 0.0
+            }
       });
 
       function bouton_avancer() {
         document.getElementById('text_area').value += "Avancer !\n";
-        twist.linear.x = 1.0;
+        twist.linear.x = 6.0;
       }
 
       function bouton_arreter() {
@@ -186,22 +201,26 @@ Client-side:
         twist.linear.x = 0.0;
       } 
 
-      function bouton_effacer() {s
+      function bouton_effacer() {
         document.getElementById('text_area').value = '';
       }
 
       // Define some functions1
-      function connectROS(adresse_ip) {
+      function connectROS() {
         // This function connects to the rosbridge server
 
 	    rbServer = new ROSLIB.Ros({
         // Assuming ros server IP is 10.42.0.1
-	      url : 'ws://adresse_ip'
+	      url : 'ws://' + document.getElementById('input_ip').value + ':9090'
 	    });
+	    
+	    document.getElementById('image_racecar').src = 'http://' + document.getElementById('input_ip').value + ':8080/stream?topic=/racecar/raspicam_node/image&type=ros_compressed';
 
         rbServer.on('connection', function(){
             console.log('Connected to websocket server.');
             document.getElementById('text_area').value += "Connexion réussie!\n";
+            document.getElementById('avancer').disabled = false;
+            document.getElementById('arreter').disabled = false;
 
             // These lines create a topic object as defined by roslibjs
             cmdVelTopic = new ROSLIB.Topic({
@@ -221,31 +240,6 @@ Client-side:
           document.getElementById('text_area').value += "Connexion fermée!\n";
 	    });
       }
-
-      racecar_video = new ROSLIB.Ros({
-        ros: ros, name: '/stream1/image/compressed',
-        messageType: 'sensor_msgs/CompressedImage'
-	    });
-
-      racecar_video.subscribe(function(message) {
-        document.getElementById('image_racecar').src = "data:image/jpg;base64," + message.data;
-        image_topic.unsubscribe();
-      });
-
-      // These lines create a message that conforms to the structure of the Twist defined in our ROS installation
-      // It initalizes all properties to zero. They will be set to appropriate values before we publish this message.
-      var twist = new ROSLIB.Message({
-           linear : {
-                x : 0.0,
-                y : 0.0,
-                z : 0.0
-            },
-            angular : {
-                x : 0.0,
-                y : 0.0,
-                z : 0.0
-            }
-      });
 
       //Publishing loop cmd_vel at 5 Hz
       setInterval(function(){
