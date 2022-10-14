@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en-CAD">
 <!-- 
 ==References==
 Server-side:
@@ -25,12 +25,83 @@ Client-side:
     <title>Laboratoire S5-GIF250</title>
 </head>
 
+<style>
+  article rigth{
+    float: left;
+    padding: 20px;
+    width: 50%;
+    background-color: #ffffff;
+  }
+  
+  /* Clear floats after the columns */
+  section::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  div.first {
+  background-color: green;
+  opacity: 1;
+  }
+
+  div.second {
+  background-color: rgb(255, 72, 0);
+  opacity: 1;
+  }
+
+  div.third {
+  background-color: #0e00d4;
+  opacity: 1;
+  }
+
+  .button1 {
+  border: none;
+  color: white;
+  padding: 5px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  background-color: #312f2f;
+  border-radius: 6px;
+  font-weight: bold;
+  }
+
+  .button2 {
+  border: none;
+  color: white;
+  padding: 5px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  background-color: #5a5656;
+  border-radius: 6px;
+  font-weight: bold;
+  }
+
+  h1{
+    color: #312f2f;
+    font-weight: bold;
+  }
+
+</style>
+
 <body>
     
   <!-- Menu BEGIN-->
   <div class="collapse" id="navbarToggleExternalContent">
     <div class="bg-dark p-4">
-      <h6 class="text-white h4">Config</h6>
+      <h6 class="text-white h4">Configuration</h6>
+      <p class="text-white">ROS master IP:</p>
+      <input class="text" id="input_ip" name="input_ip">
+      <br>
+      <button class="button button2" onclick="connectROS()">Connectez!</button>
     </div>
   </div>
 
@@ -45,7 +116,45 @@ Client-side:
 
   <!-- Main layout BEGIN-->
   <div class="container-fluid">
+    <div class="row"> <!-- Row 1-->
+      <div class="col-auto">
+        <div class="col align-self-start">
+          <div class="row"> <!-- Row 2-->
+            <div class="col-auto">
+              <h1>Statut</h1>
+              <div class="row">
+                <!-- <input type="text" id="fname" name="fname" value="Text temporaire" disabled style="padding-left: 0px"> -->
+                <textarea id="text_area" name="text_area" disabled></textarea>
+              </div>
+              <div class="row">
+                <button class="button button1" id="effacer" onclick="bouton_effacer()">Effacer</button>
+              </div>
+            </div>
+          </div>
+          <div class="row"> <!-- Row 3-->
+            <div class="col-auto">
+              <h1>Contrôle</h1>
+              <div class="row">
+                <button class="button button1" id="avancer" onclick="bouton_avancer()" disabled>Avancer</button>
+                <button class="button button1" id="arreter" onclick="bouton_arreter()" disabled>Arrêter</button>
+              </div>
+          </div>
+          </div>  
+        </div>            
+      </div> 
 
+      <div class="col-sm-8">
+        <div class="col align-self-end">
+          <div class="row">
+            <h1>Caméra</h1>
+          </div>
+          <div class="row">
+            <!-- <img id="image_racecar"> -->
+            <img id="image_racecar" style='height: 100%; width: 100%; object-fit: contain' src="image_chien.png">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <!-- Main layout END-->
   
@@ -64,39 +173,10 @@ Client-side:
 
       //Some initializations after the page has been shown
       $(document).ready(function(){
-        document.getElementById("log").value = 'Default text\n'
+        //document.getElementById("log").value = 'Default text\n'
       });
-
-      // Define some functions
-      function connectROS() {
-        // This function connects to the rosbridge server
-
-	    rbServer = new ROSLIB.Ros({
-          // Assuming ros server IP is 10.42.0.1
-	      url : 'ws://10.42.0.1:9090'
-	    });
-
-        rbServer.on('connection', function(){
-            console.log('Connected to websocket server.');
-
-            // These lines create a topic object as defined by roslibjs
-            cmdVelTopic = new ROSLIB.Topic({
-                ros : rbServer,
-                name : '/racecar/cmd_vel_abtr_2',
-                messageType : 'geometry_msgs/Twist'
-            });
-	    });
-
-        rbServer.on('error', function(error) {
-          console.log('Error connecting to websocket server: ', error);
-	    });
-
-	    rbServer.on('close', function() {
-          console.log('Connection to websocket server closed.');
-	    });
-      }
-
-      // These lines create a message that conforms to the structure of the Twist defined in our ROS installation
+      
+            // These lines create a message that conforms to the structure of the Twist defined in our ROS installation
       // It initalizes all properties to zero. They will be set to appropriate values before we publish this message.
       var twist = new ROSLIB.Message({
            linear : {
@@ -110,6 +190,56 @@ Client-side:
                 z : 0.0
             }
       });
+
+      function bouton_avancer() {
+        document.getElementById('text_area').value += "Avancer !\n";
+        twist.linear.x = 6.0;
+      }
+
+      function bouton_arreter() {
+        document.getElementById('text_area').value += "Arrêter !\n";
+        twist.linear.x = 0.0;
+      } 
+
+      function bouton_effacer() {
+        document.getElementById('text_area').value = '';
+      }
+
+      // Define some functions1
+      function connectROS() {
+        // This function connects to the rosbridge server
+
+	    rbServer = new ROSLIB.Ros({
+        // Assuming ros server IP is 10.42.0.1
+	      url : 'ws://' + document.getElementById('input_ip').value + ':9090'
+	    });
+	    
+	    document.getElementById('image_racecar').src = 'http://' + document.getElementById('input_ip').value + ':8080/stream?topic=/racecar/raspicam_node/image&type=ros_compressed';
+
+        rbServer.on('connection', function(){
+            console.log('Connected to websocket server.');
+            document.getElementById('text_area').value += "Connexion réussie!\n";
+            document.getElementById('avancer').disabled = false;
+            document.getElementById('arreter').disabled = false;
+
+            // These lines create a topic object as defined by roslibjs
+            cmdVelTopic = new ROSLIB.Topic({
+                ros : rbServer,
+                name : '/racecar/cmd_vel_abtr_2',
+                messageType : 'geometry_msgs/Twist'
+            });
+	    });
+
+        rbServer.on('error', function(error) {
+          console.log('Error connecting to websocket server: ', error);
+          document.getElementById('text_area').value += "Erreur de connexion avec le Racecar!\n";
+	    });
+
+	    rbServer.on('close', function() {
+          console.log('Connection to websocket server closed.');
+          document.getElementById('text_area').value += "Connexion fermée!\n";
+	    });
+      }
 
       //Publishing loop cmd_vel at 5 Hz
       setInterval(function(){
