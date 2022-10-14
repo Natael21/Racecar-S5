@@ -80,7 +80,7 @@ class slash_controller(object):
             elif ( self.high_level_mode == 0 ):
                 # Closed-loop velocity on arduino
                 self.propulsion_cmd = self.propulsion_ref
-                self.arduino_mode   = 2  
+                self.arduino_mode   = 1  
                 self.steering_cmd   = self.steering_ref + self.steering_offset 
                 
             elif ( self.high_level_mode == 2 ):
@@ -146,17 +146,19 @@ class slash_controller(object):
             elif ( self.high_level_mode == 7 ):
                 # Template for custom controllers
             
-                self.steering_cmd   = 0 + self.steering_offset
-                self.propulsion_cmd = 0     
-                self.arduino_mode   = 0 # Mode ??? on arduino 
+                # vitesse :
+                self.steering_cmd   = 0
+                self.propulsion_cmd = 2.25     #[m/s]
+                self.arduino_mode   = 2 # Mode ??? on arduino 
                 
                 
             elif ( self.high_level_mode == 8 ):
                 # Template for custom controllers
             
-                self.steering_cmd   = 0 + self.steering_offset
-                self.propulsion_cmd = 0    
-                self.arduino_mode   = 0 # Mode ??? on arduino
+                # Position
+                self.steering_cmd   = 0
+                self.propulsion_cmd = 1.5 #[m]
+                self.arduino_mode   = 3 # Mode ??? on arduino
         
         self.send_arduino()
 

@@ -92,22 +92,24 @@ class teleop(object):
                 
             #If left trigger is active 
             elif (joy_msg.buttons[6]):
-                # No ctl_ref msg published!
-                return;
+                self.cmd_msg.linear.x  = 0
+                self.cmd_msg.angular.z = 0
+                self.cmd_msg.linear.z  = 8 # Control mode position
                 
             #If right joy pushed
             elif(joy_msg.buttons[11]):
                  # Template for a custom mode
                 self.cmd_msg.linear.x  = 0
                 self.cmd_msg.angular.z = 0
-                self.cmd_msg.linear.z  = 7 # Control mode
+                self.cmd_msg.linear.z  = 7 # Control mode vitesse
                 
             #If bottom arrow is active
             elif(joy_msg.axes[5]):
+                return
                 # Template for a custom mode
                 self.cmd_msg.linear.x  = 0
                 self.cmd_msg.angular.z = 0
-                self.cmd_msg.linear.z  = 8 # Control mode
+                self.cmd_msg.linear.z  = 0 # Control mode
 
             # Defaults operation
             # No active button

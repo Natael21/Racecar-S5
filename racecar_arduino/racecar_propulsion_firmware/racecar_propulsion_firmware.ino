@@ -60,12 +60,12 @@ const int dri_dir_pin     = 42; //
 
 //TODO: VOUS DEVEZ DETERMINEZ DES BONS PARAMETRES SUIVANTS
 const float filter_rc  =  0.1;
-const float vel_kp     =  10.0; 
-const float vel_ki     =  0.0; 
+const float vel_kp     =  13.0; 
+const float vel_ki     =  5.0; 
 const float vel_kd     =  0.0;
-const float pos_kp     =  1.0; 
+const float pos_kp     =  8.0; 
 const float pos_kd     =  0.0;
-const float pos_ki     =  0.0; 
+const float pos_ki     =  1.0; 
 const float pos_ei_sat =  10000.0; 
 
 // Loop period 
@@ -110,6 +110,7 @@ signed long enc_now   = 0;
 signed long enc_old   = 0;
 
 float pos_now   = 0;
+float pos_old   = 0;
 float vel_now   = 0;
 float vel_old   = 0;
 
@@ -321,25 +322,24 @@ void ctl(){
 
   //TODO: VOUS DEVEZ COMPLETEZ LA DERIVEE FILTRE ICI
   float vel_raw = (enc_now - enc_old) * tick2m / time_period_low * 1000;
-  float alpha   = 0; // TODO
-  float vel_fil = vel_raw;    // Filter TODO
-  
+  float alpha   = 0.75; // TODO
+  float vel_fil = alpha*vel_raw + (1-alpha)*vel_old;    // Filter TODO *DONE*
   // Propulsion Controllers
   
   //////////////////////////////////////////////////////
   if (ctl_mode == 0 ){
     // Zero output
-    dri_pwm    = pwm_zer_dri ;
+    dri_pwm    = pwm_zer_dri;
     
     // reset integral actions
     vel_error_int = 0;
-    pos_error_int = 0 ;
-    
+    pos_error_int = 0 ;    
   }
   //////////////////////////////////////////////////////
   else if (ctl_mode == 1 ){
     // Fully Open-Loop
     // Commands received in [Volts] directly
+
     dri_cmd    = dri_ref;
     dri_pwm    = cmd2pwm( dri_cmd ) ;
     
@@ -352,15 +352,20 @@ void ctl(){
     // Low-level Velocity control
     // Commands received in [m/sec] setpoints
     
-    float vel_ref, vel_error;
+    float vel_ref, vel_error, vel_error_ddt, dt;
+
+    dt = time_period_low / 1000.0;
 
     //TODO: VOUS DEVEZ COMPLETEZ LE CONTROLLEUR SUIVANT
     vel_ref       = dri_ref; 
     vel_error     = vel_ref - vel_fil;
-    vel_error_int = 0; // TODO
-    dri_cmd       = vel_kp * vel_error; // proportionnal only
+    vel_error_int = vel_error_int + vel_error * dt;
+    //vel_error_ddt = (vel_error - vel_old) / dt;
+    vel_error_ddt = 0; //Fait trop de bruit sur le signal, donc on l'enlève
+    dri_cmd       = vel_kp * vel_error + vel_ki * vel_error_int + vel_kd * vel_error_ddt;
     
     dri_pwm    = cmd2pwm( dri_cmd ) ;
+
 
   }
   ///////////////////////////////////////////////////////
@@ -368,20 +373,23 @@ void ctl(){
     // Low-level Position control
     // Commands received in [m] setpoints
     
-    float pos_ref, pos_error, pos_error_ddt;
+    float pos_ref, pos_error, pos_error_ddt, dt;
+
+    dt = time_period_low / 1000.0;
 
     //TODO: VOUS DEVEZ COMPLETEZ LE CONTROLLEUR SUIVANT
     pos_ref       = dri_ref; 
-    pos_error     = 0; // TODO
-    pos_error_ddt = 0; // TODO
-    pos_error_int = 0; // TODO
+    pos_error     = pos_ref - pos_now;
+    pos_error_ddt = (pos_error - pos_old) / dt;
+    pos_error_int = pos_error_int + pos_error * dt;
+    pos_old       = pos_now;
     
     // Anti wind-up
     if ( pos_error_int > pos_ei_sat ){
       pos_error_int = pos_ei_sat;
     }
     
-    dri_cmd = 0; // TODO
+    dri_cmd = pos_kp * pos_error + pos_ki * pos_error_int + pos_kd * pos_error_ddt;
     
     dri_pwm = cmd2pwm( dri_cmd ) ;
   }
