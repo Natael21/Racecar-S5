@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en-CAD">
+<!-- 
+==References==
+Server-side:
+* http://docs.ros.org/indigo/api/roswww/html/
+* http://wiki.ros.org/web_video_server
+* http://wiki.ros.org/rosbridge_suite/Tutorials/RunningRosbridge
+
+Client-side:
+* http://wiki.ros.org/roslibjs/Tutorials/BasicRosFunctionality
+* https://getbootstrap.com/docs/4.0/getting-started/introduction/
+* https://getbootstrap.com/docs/4.0/layout/grid/
+-->
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <title>Controle</title>
+</head>
+
+<style>
+  article rigth{
+    float: left;
+    padding: 20px;
+    width: 50%;
+    background-color: #ffffff;
+  }
+  
+  /* Clear floats after the columns */
+  section::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  div.first {
+  background-color: green;
+  opacity: 1;
+  }
+
+  div.second {
+  background-color: rgb(255, 72, 0);
+  opacity: 1;
+  }
+
+  div.third {
+  background-color: #0e00d4;
+  opacity: 1;
+  }
+
+  .button1 {
+  border: none;
+  color: white;
+  padding: 5px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  background-color: #343A40;
+  border-radius: 6px;
+  font-weight: bold;
+  }
+
+  .button2 {
+  border: none;
+  color: white;
+  padding: 5px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 20px 6px;
+  cursor: pointer;
+  background-color: #343A40;
+  border-radius: 6px;
+  font-weight: bold;
+  }
+  
+  .button3 {
+  border: none;
+  color: white;
+  padding: 5px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+
+  margin: 4px 2px;
+  cursor: pointer;
+  background-color: #ff0000;
+  border-radius: 6px;
+  font-weight: bold;
+  }
+
+</style>
+
+<body onload="start_script()">
+
+  <!-- Main layout BEGIN-->
+  <div class="container-fluid">
+    <div class="row"> <!-- Row 1-->
+      <div class="col-auto">
+        <div class="col align-self-start">
+          <div class="row"> <!-- Row 2-->
+            <div class="col-auto">
+              <h1 class="text-black h1" style="width: 100%; height: auto">Information</h1>
+              <div class="row"> <!-- Row for user_name -->
+                <p style="width: auto; height: auto">Nom d'utilisateur : </p>
+                <input type="text" id="user_name_textarea" style="width: 100px" disabled></list>
+              </div>
+              <div class="row"> <!-- Row for ip_adress -->
+                <p style="width: auto; height: auto">Adresse ip : </p>
+                <input type="text" id="ip_adress_textarea" style="width: 100px" disabled></textarea>
+              </div>
+              <div class="row"> <!-- Row for Statut -->
+                <p style="width: auto; height: auto">Statut : </p>
+                <input type="text" id="statut_textarea" disabled></textarea>
+              </div>
+              <div class="row"> <!-- Row for text_area -->
+                <textarea id="text_area" name="text_area" style="font-weight:700; color:black; font-size:10" disabled>Commande de controle</textarea>
+              </div>
+              <div class="row"> <!-- Row for deconnexion button -->
+                  <form action="index.html">
+                    <input type="submit" class="button3" value="Deconnexion">
+                  </form> 
+              </div>
+            </div>
+          </div>
+          <div class="row"> <!-- Row 3-->
+            <div class="col-auto">
+              <h1 style="width: auto; height: auto">Contrôle</h1>
+              <div class="row">               
+                <div class="col"></div>
+                <div class="col">
+                    <button id="avancer" onclick="gestion_bouton('Avancer')" disabled><img src="up_arrow.jpg" style="width: 30px; height: 30px"></button>
+                </div>
+                <div class="col"></div>
+              </div>
+              <div class="row">
+                  <div class="col">
+                    <button class="button" id="gauche"  onclick="gestion_bouton('Gauche')" disabled><img src="left_arrow.jpg" style="width:30px; height: 30px"></button>
+                  </div>
+                  <div class="col">
+                      <button class="button" id="reculer" onclick="gestion_bouton('Reculer')" disabled><img src="down_arrow.jpg" style="width:30px; height:30px"></button>
+                  </div>
+                  <div class="col">
+                      <button class="button" id="droite"  onclick="gestion_bouton('Droite')" disabled><img src="right_arrow.jpg" style="width:30px; height:30px"></button>
+                  </div>
+              </div>
+              
+              <div class="row align-items-center">    
+                  <button class="button button2" id="arrêter"  onclick="bouton_arreter()" disabled>Arrêter</button>
+              </div>
+          </div>
+          </div>  
+        </div>            
+      </div> 
+
+      <div class="col-sm-8">
+        <div class="col align-self-end">
+          <div class="row">
+            <h1 style="width: auto; height: auto">Caméra</h1>
+          </div>
+          <div class="row">
+            <!-- <img id="image_racecar"> -->
+            <img id="image_racecar" style='height: 100%; width: 100%; object-fit: contain' src="image_chien.png">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Main layout END-->
+  
+  <!-- JavaScript, import frameworks -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="js/jquery-3.3.1.slim.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/roslib.min.js"></script> <!-- rosbridge -->
+
+  <!-- Custom scripts -->
+  <script>
+      // Define some global variables
+      var rbServer = null;
+      var cmdVelTopic = null;
+      var connected = false;
+
+      //Some initializations after the page has been shown
+      $(document).ready(function(){
+        //document.getElementById("log").value = 'Default text\n'
+      });
+      
+            // These lines create a message that conforms to the structure of the Twist defined in our ROS installation
+      // It initalizes all properties to zero. They will be set to appropriate values before we publish this message.
+      var twist = new ROSLIB.Message({
+           linear : {
+                x : 0.0,
+                y : 0.0,
+                z : 0.0
+            },
+            angular : {
+                x : 0.0,
+                y : 0.0,
+                z : 0.0
+            }
+      });
+      
+      
+      document.addEventListener("keydown", (e) => {if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes (e.code)) {e.preventDefault();}}, false);
+      
+      document.onkeydown = function (event) {
+        switch (event.keyCode) {
+            case 37: //Left key is pressed
+                gestion_bouton("Gauche");
+                break;
+            case 38: //Up key is pressed
+                gestion_bouton("Avancer");
+                break;
+            case 39: //Right key is pressed
+                gestion_bouton("Droite");
+                break;
+            case 40: //Dowm key is pressed
+                gestion_bouton("Reculer");
+                break;
+        }
+      };
+      
+      document.onkeyup = function (event) {
+        switch (event.keyCode) {
+            case 37: //Left key is pressed
+                gestion_bouton("stop_angular");
+                break;
+            case 38: //Up key is pressed
+                gestion_bouton("stop_linear");
+                break;
+            case 39: //Right key is pressed
+                gestion_bouton("stop_angular");
+                break;
+            case 40: //Dowm key is pressed
+                gestion_bouton("stop_linear");
+                break;
+        }
+      };
+
+      function gestion_bouton(id) {
+        if (connected == true)
+        {
+            if(id == "Gauche")
+            {
+                document.getElementById('text_area').value = "Gauche !\n";
+                twist.angular.z = 0.3665;
+            }
+            else if(id == "Droite")
+            {
+                document.getElementById('text_area').value = "Droite !\n";
+                twist.angular.z = -0.3665;
+            }
+            else if (id == "stop_angular")
+            {
+                twist.angular.z = 0.0;
+            }
+            
+            if(id == "Avancer")
+            {
+                document.getElementById('text_area').value = "Avancer !\n";
+                twist.linear.x = 5.0;
+            }
+            else if(id == "Reculer")
+            {
+                document.getElementById('text_area').value = "Reculer !\n";
+                twist.linear.x = -5.0;
+            }
+            else if (id == "stop_linear")
+            {
+               twist.linear.x = 0.0; 
+            }       
+        }
+        else
+        {
+            document.getElementById('text_area').value = "Bouton désactiver!\nCar pas de connection\n";
+            twist.linear.x = 0.0; 
+            twist.angular.z = 0.0;
+        }
+      }
+      
+      function bouton_arreter() {
+        document.getElementById('text_area').value = "Arrêter !\n";
+        twist.linear.x = 0.0;
+        twist.angular.z = 0.0;
+      }
+      
+      function start_script() {
+      
+          let params = new URLSearchParams(location.search);
+          document.getElementById('user_name_textarea').value = params.get("user_name");
+          document.getElementById('ip_adress_textarea').value = params.get("ip_adress");
+          
+          connectROS(params.get("ip_adress"));
+      }
+      
+      // Define some functions1
+      function connectROS(ip_adress) {
+        // This function connects to the rosbridge server
+
+	    rbServer = new ROSLIB.Ros({
+        // Assuming ros server IP is 10.42.0.1
+	      url : 'ws://' + ip_adress + ':9090'
+	    });
+	    
+	    document.getElementById('image_racecar').src = 'http://' + ip_adress + ':8080/stream?topic=/racecar/raspicam_node/image&type=ros_compressed';
+
+        rbServer.on('connection', function(){
+            console.log('Connected to websocket server.');
+            document.getElementById('statut_textarea').value = "Connexion réussie!\n";
+            connected = true;
+            document.getElementById('avancer').disabled = false;
+            document.getElementById('reculer').disabled = false;
+            document.getElementById('droite').disabled = false;
+            document.getElementById('gauche').disabled = false;
+            document.getElementById('arrêter').disabled = false;
+
+            // These lines create a topic object as defined by roslibjs
+            cmdVelTopic = new ROSLIB.Topic({
+                ros : rbServer,
+                name : '/racecar/cmd_vel_abtr_2',
+                messageType : 'geometry_msgs/Twist'
+            });
+	    });
+
+        rbServer.on('error', function(error) {
+          console.log('Error connecting to websocket server: ', error);
+          document.getElementById('statut_textarea').value = "Erreur de connexion!\n";
+          connected = false;
+	    });
+
+	    rbServer.on('close', function() {
+          console.log('Connection to websocket server closed.');
+          document.getElementById('image_racecar').src = "image_chien.png";
+          connected = false;
+          document.getElementById('avancer').disabled = true;
+          document.getElementById('reculer').disabled = true;
+          document.getElementById('droite').disabled = true;
+          document.getElementById('gauche').disabled = true;
+          document.getElementById('arrêter').disabled = true;
+	    });
+      }
+
+      //Publishing loop cmd_vel at 5 Hz
+      setInterval(function(){
+           if(cmdVelTopic != null)
+           {
+             cmdVelTopic.publish(twist);
+           }
+      }, 200);
+      
+      
+      textarea = document.querySelector("#text_area");
+      textarea.addEventListener('input', autoResize, false);
+      
+      function autoResize() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+      }
+      
+      
+      
+      
+      
+      
+
+  </script>
+</body>
+</html>

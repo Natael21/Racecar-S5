@@ -22,7 +22,7 @@ Client-side:
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/dashboard.css">
 
-    <title>Connexion</title>
+    <title>Laboratoire S5-GIF250</title>
 </head>
 
 <style>
@@ -84,13 +84,6 @@ Client-side:
   border-radius: 6px;
   font-weight: bold;
   }
-  
-    .text_margin {
-  padding: 5px 10px;
-  text-align: left;
-  margin: 10px 0px;
-  border-radius: 6px;
-  }
 
   h1{
     color: #312f2f;
@@ -100,34 +93,65 @@ Client-side:
 </style>
 
 <body>
+    
+  <!-- Menu BEGIN-->
+  <div class="collapse" id="navbarToggleExternalContent">
+    <div class="bg-dark p-4">
+      <h6 class="text-white h4">Configuration</h6>
+      <p class="text-white">ROS master IP:</p>
+      <input class="text" id="input_ip" name="input_ip">
+      <br>
+      <button class="button button2" onclick="connectROS()">Connectez!</button>
+    </div>
+  </div>
+
+  <nav class="navbar navbar-dark bg-dark">
+    <div>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </nav>
+  <!-- Menu END-->
 
   <!-- Main layout BEGIN-->
-  <div class="container-fluid" style="background-color: #343A40">
-    <div class="row" style="background-color: #343A40"> <!-- Row 1-->
-      <div class="col-auto" style="background-color: #343A40">
-        <div class="col align-self-start" style="background-color: #343A40"> 
-            <h4 class="text-white h4">Connexion</h4> 
-            
-            <!-- <form method="post" 
-                  target="print_popup" 
-                  action="/myFormProcessorInNewWindow.aspx"
-                  onsubmit="window.open('about:blank','print_popup','width=1000,height=800');"
-            >  
-            
-            <form target="_blank" action="http://example.com"
-                  method="post" id="mc-embedded-subscribe-form"
-                  name="mc-embedded-subscribe-form" class="validate"
-            >
-            -->
-                 
-            <form action="index_control.html" method="get" id="form_configuration" name="form_configuration">
-                <label for="user_name" class="text-white h6">Nom d'utilisateur:</label><br>
-                <input type="text" class="text_margin" id="user_name" name="user_name" value="Nameless" required><br>
-                <label for="ip_adress" class="text-white h6">ROS master IP:</label><br>
-                <input type="text" class="text_margin" id="ip_adress" name="ip_adress" value="10.42.0.1" required><br><br>
-                <input type="submit" class="button2" value="Connectez!">
-            </form> 
-            
+  <div class="container-fluid">
+    <div class="row"> <!-- Row 1-->
+      <div class="col-auto">
+        <div class="col align-self-start">
+          <div class="row"> <!-- Row 2-->
+            <div class="col-auto">
+              <h1>Statut</h1>
+              <div class="row">
+                <!-- <input type="text" id="fname" name="fname" value="Text temporaire" disabled style="padding-left: 0px"> -->
+                <textarea id="text_area" name="text_area" disabled></textarea>
+              </div>
+              <div class="row">
+                <button class="button button1" id="effacer" onclick="bouton_effacer()">Effacer</button>
+              </div>
+            </div>
+          </div>
+          <div class="row"> <!-- Row 3-->
+            <div class="col-auto">
+              <h1>Contrôle</h1>
+              <div class="row">
+                <button class="button button1" id="avancer" onclick="bouton_avancer()" disabled>Avancer</button>
+                <button class="button button1" id="arreter" onclick="bouton_arreter()" disabled>Arrêter</button>
+              </div>
+          </div>
+          </div>  
+        </div>            
+      </div> 
+
+      <div class="col-sm-8">
+        <div class="col align-self-end">
+          <div class="row">
+            <h1>Caméra</h1>
+          </div>
+          <div class="row">
+            <!-- <img id="image_racecar"> -->
+            <img id="image_racecar" style='height: 100%; width: 100%; object-fit: contain' src="image_chien.png">
+          </div>
         </div>
       </div>
     </div>
@@ -209,15 +233,11 @@ Client-side:
         rbServer.on('error', function(error) {
           console.log('Error connecting to websocket server: ', error);
           document.getElementById('text_area').value += "Erreur de connexion avec le Racecar!\n";
-          document.getElementById('avancer').disabled = true;
-          document.getElementById('arreter').disabled = true;
 	    });
 
 	    rbServer.on('close', function() {
           console.log('Connection to websocket server closed.');
           document.getElementById('text_area').value += "Connexion fermée!\n";
-          document.getElementById('avancer').disabled = true;
-          document.getElementById('arreter').disabled = true;
 	    });
       }
 
