@@ -60,8 +60,8 @@ const int dri_dir_pin     = 42; //
 
 //TODO: VOUS DEVEZ DETERMINEZ DES BONS PARAMETRES SUIVANTS
 const float filter_rc  =  0.1;
-const float vel_kp     =  13.0; 
-const float vel_ki     =  5.0; 
+const float vel_kp     =  8.2225; 
+const float vel_ki     =  0.0; 
 const float vel_kd     =  0.0;
 const float pos_kp     =  8.0; 
 const float pos_kd     =  0.0;
@@ -295,6 +295,23 @@ void cmdCallback ( const geometry_msgs::Twist&  twistMsg ){
   time_last_com = millis(); // for watchdog
 }
 
+void speekerCallback ( const geometry_msgs::LaserScan& position) // position en m
+{
+  
+  if (position <= 0.5)
+  {
+    digitalWrite(40, HIGH); // Allume le speeker
+    delay(500); // Délai de 0.5 secondes
+    digitalWrite(40, LOW); // Ferme le speeker
+  }
+  else
+  {
+    digitalWrite(40, LOW); // Ferme le speeker
+  }
+
+  
+}
+
 ///////////////////////////////////////////////////////////////////
 // Controller One tick
 ///////////////////////////////////////////////////////////////////
@@ -424,9 +441,10 @@ void ctl(){
 }
 
 
-// ROS suscriber
-ros::Subscriber<geometry_msgs::Twist> cmdSubscriber("prop_cmd", &cmdCallback) ;
 
+// ROS suscriber
+ros::Subscriber<geometry_msgs::Twist> cmdSubscriber("prop_cmd", &cmdCallback);
+ros::Subscriber<geometry_msgs::LaserScan> scanSubscriber("odomemtry", &speekerCallback) ;
 
 ///////////////////////////////////////////////////////////////////
 // Arduino Initialization
@@ -437,6 +455,7 @@ void setup(){
   steeringServo.attach(ser_pin); 
   pinMode(dri_dir_pin, OUTPUT);
   pinMode(dri_pwm_pin, OUTPUT);
+  pinMode(40, OUTPUT); // PIN du speeker -------------------------------------
   
   // Init Communication
   nodeHandle.getHardware()->setBaud(baud_rate);
@@ -447,7 +466,8 @@ void setup(){
   
   // Init ROS
   nodeHandle.initNode();
-  nodeHandle.subscribe(cmdSubscriber) ; // Subscribe to the steering and throttle messages
+  nodeHandle.subscribe(cmdSubscriber); // Subscribe to the steering and throttle messages
+  nodeHandle.subscribe(scanSubscriber); // Subscribe to the lidar "scan" topic
   nodeHandle.advertise(prop_sensors_pub);
   
   // Initialize Steering and drive cmd to neutral

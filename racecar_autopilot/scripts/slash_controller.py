@@ -28,13 +28,15 @@ class slash_controller(object):
         # Controller        
         self.steering_offset = 0.0 # To adjust according to the vehicle
         
-        self.K_autopilot =  None # TODO: DESIGN LQR
+        self.K_autopilot =  [[0, 0], [0.3162, 0.5383]]
     
-        self.K_parking   =  None # TODO: DESIGN PLACEMENT DE POLES
+        self.K_parking   =  [[1, 0, 0], [0, 0.0938, 0.300]]
         
         # Memory
         
         # References Inputs
+        self.velocity_reference = 3.5 # [m/s]
+        self.position_ref  = 3 # [m]
         self.propulsion_ref  = 0
         self.steering_ref    = 0
         self.high_level_mode = 0  # Control mode of this controller node
@@ -92,49 +94,32 @@ class slash_controller(object):
             # APP4 (closed-loop steering) controllers bellow
             elif ( self.high_level_mode == 3 or self.high_level_mode == 5  ):
                 # Closed-loop velocity and steering
-            
-                #########################################################
-                # TODO: COMPLETEZ LE CONTROLLER
                 
-                # Auto-pilot # 1 
-                
-                # x = [ ?,? ,.... ]
-                # r = [ ?,? ,.... ]
-                # u = [ servo_cmd , prop_cmd ]
-
-                x = None
-                r = None
+                x = np.array([self.laser_y, -self.laser_theta])
+                r = np.array([0, 0])
+                # u = [servo_cmd, prop_cmd]
                 
                 u = self.controller1( x , r )
 
                 self.steering_cmd   = u[1] + self.steering_offset
-                self.propulsion_cmd = u[0]     
-                self.arduino_mode   = 0    # Mode ??? on arduino
-                # TODO: COMPLETEZ LE CONTROLLER
-                #########################################################
+                # self.propulsion_cmd = u[0]   
+                self.propulsion_cmd = self.velocity_reference  
+                self.arduino_mode   = 2    # Mode 2 on arduino
                 
             elif ( self.high_level_mode == 4 ):
                 # Closed-loop position and steering
-            
-                #########################################################
-                # TODO: COMPLETEZ LE CONTROLLER
                 
-                # Auto-pilot # 1 
+                pos = self.position_ref
                 
-                # x = [ ?,? ,.... ]
-                # r = [ ?,? ,.... ]
-                # u = [ servo_cmd , prop_cmd ]
-                
-                x = None
-                r = None
+                x = np.array([ self.position, self.laser_y, -self.laser_theta ])
+                r = np.array([ pos, 0, 0 ])
+                # u = [servo_cmd, prop_cmd]
                 
                 u = self.controller2( x , r )
 
                 self.steering_cmd   = u[1] + self.steering_offset
                 self.propulsion_cmd = u[0]     
-                self.arduino_mode   = 0 # Mode ??? on arduino
-                # TODO: COMPLETEZ LE CONTROLLER
-                #########################################################
+                self.arduino_mode   = 2 # Mode 2 on arduino
                 
             elif ( self.high_level_mode == 6 ):
                 # Reset encoders
@@ -164,24 +149,24 @@ class slash_controller(object):
 
         
     #######################################
-    def controller1(self, y , r):
+    def controller1(self, x , r):
 
         # Control Law TODO
 
-        u = np.array([ 0 , 0 ]) # placeholder
+        # u = np.array([ 0 , 0 ]) # placeholder
         
-        #u = np.dot( self.K_autopilot , (r - x) )
+        u = np.dot( self.K_autopilot , (r - x))
         
         return u
 
     #######################################
-    def controller2(self, y , r ):
+    def controller2(self, x , r ):
 
         # Control Law TODO
-
-        u = np.array([ 0 , 0 ]) # placeholder
         
-        #u = np.dot( self.K_parking , (r - x) )
+        # u = np.array([ 0 , 0 ]) # placeholder
+        
+        u = np.dot( self.K_parking , (r - x) )
         
         return u
 
