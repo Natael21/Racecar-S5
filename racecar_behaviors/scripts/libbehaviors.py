@@ -34,7 +34,6 @@ def brushfire(occupancyGrid):
     mapOfWorld[occupancyGrid==100] = 1 # obstacles
     mapOfWorld[occupancyGrid==-1] = 1  # unknowns
 
-    print(va chier)
     
     # do brushfire algorithm here
     
