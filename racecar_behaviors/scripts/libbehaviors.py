@@ -34,7 +34,6 @@ def brushfire(occupancyGrid):
     mapOfWorld[occupancyGrid==100] = 1 # obstacles
     mapOfWorld[occupancyGrid==-1] = 1  # unknowns
 
-    print(adsefwef)
     # do brushfire algorithm here
     
     # brushfire: -1 = obstacle or unknown, safer cells have higher value)

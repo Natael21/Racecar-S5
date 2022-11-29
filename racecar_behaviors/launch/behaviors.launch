@@ -24,6 +24,11 @@
        <remap from="scan"    to="scan"/>
        <remap from="odom"    to="odometry/filtered"/>
     </node>  
+
+    <node pkg="racecar_behaviors" type="balloon_detector.py" name="balloon_detector" output="screen">
+       <remap from="cmd_vel" to="cmd_vel_abtr_3"/>
+       <remap from="scan"    to="scan"/>
+    </node> 
     
     <node pkg="racecar_behaviors" type="obstacle_detector.py" name="obstacle_detector" output="screen">
        <remap from="cmd_vel" to="cmd_vel_abtr_1"/>
