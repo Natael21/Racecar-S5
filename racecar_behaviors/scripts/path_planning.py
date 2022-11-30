@@ -410,8 +410,8 @@ def main():
     # start and goal position
     sx = 3.0  # [m]
     sy = 3.0  # [m]
-    gx = 5.75  # [m] ################################# GOAL-POSITION #########################################
-    gy = 22.0 # [m] ################################# GOAL-POSITION #########################################
+    gx = 13.5 + sx # [m] ################################# GOAL-POSITION #########################################
+    gy = 2.1 + sy # [m] ################################# GOAL-POSITION #########################################
     grid_size = 0.9  # [m]
     robot_radius = 0.5  # [m]
 
@@ -439,8 +439,8 @@ def main():
     for x in range(0, 210) :
         for y in range(0, 397) :
             if grid[x][y] == -1:
-                ox.append(x/10)
-                oy.append(y/10)
+                ox.append(y/10)
+                oy.append(x/10)
 
     # ox.reverse()
         
