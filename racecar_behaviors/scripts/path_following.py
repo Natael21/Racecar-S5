@@ -3,15 +3,19 @@
 import rospy
 import math 
 import numpy as np
+
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
+
+import actionlib
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 class PathFollowing:
     def __init__(self):
         self.max_speed = rospy.get_param('~max_speed', 1)
         self.max_steering = rospy.get_param('~max_steering', 0.37)
-        self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        #self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
         self.scan_sub = rospy.Subscriber('scan', LaserScan, self.scan_callback, queue_size=1)
         self.odom_sub = rospy.Subscriber('odom', Odometry, self.odom_callback, queue_size=1)
 
@@ -21,18 +25,40 @@ class PathFollowing:
         #l2 = len(msg.ranges)/2;
         #ranges = msg.ranges[l2:len(msg.ranges)] + msg.ranges[0:l2]
         
-        twist = Twist()
-        twist.linear.x = self.max_speed
-        twist.angular.z = 0
+        #twist = Twist()
+        #twist.linear.x = self.max_speed
+        #twist.angular.z = 0
            
-        self.cmd_vel_pub.publish(twist);
+        #self.cmd_vel_pub.publish(twist);
+        print("nothing")
         
     def odom_callback(self, msg):
         rospy.loginfo("Current speed = %f m/s", msg.twist.twist.linear.x)
 
+def movebase_client():
+
+    client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
+    client.wait_for_server()
+
+    goal = MoveBaseGoal()
+    goal.target_pose.header.frame_id = "map"
+    goal.target_pose.header.stamp = rospy.Time.now()
+    goal.target_pose.pose.position.x = 3
+    goal.target_pose.pose.position.y = 1
+    goal.target_pose.pose.orientation.w = 1.0
+
+    client.send_goal(goal)
+    wait = client.wait_for_result()
+    if not wait:
+        rospy.logerr("Action server not available!")
+        rospy.signal_shutdown("Action server not available!")
+    else:
+        return client.get_result()
+        
 def main():
     rospy.init_node('path_following')
     pathFollowing = PathFollowing()
+    movebase_client()
     rospy.spin()
 
 if __name__ == '__main__':

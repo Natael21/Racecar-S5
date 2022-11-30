@@ -7,7 +7,8 @@ from nav_msgs.srv import GetMap
 from libbehaviors import *
 
 def main():
-    rospy.init_node('brushfire')
+    rospy.init_node('labo_brushfire')
+
     prefix = "racecar"
     rospy.wait_for_service(prefix + '/get_map')
     try:
@@ -43,5 +44,11 @@ def main():
     cv2.imwrite('map.bmp', cv2.transpose(cv2.flip(grid, -1))) 
     rospy.loginfo("Exported map.bmp")
 
+    rospy.spin()
+
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass
+    

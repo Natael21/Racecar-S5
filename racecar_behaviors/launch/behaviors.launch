@@ -17,18 +17,29 @@
   <arg name="prefix" default="racecar"/>
   
   <group ns="$(arg prefix)">
-      
+
     <node pkg="racecar_behaviors" type="path_following.py" name="path_following" output="screen">
        <param name="max_speed" value="1"/>
        <remap from="cmd_vel" to="cmd_vel_abtr_2"/>
        <remap from="scan"    to="scan"/>
        <remap from="odom"    to="odometry/filtered"/>
+       <param name="/move_base_sequence/is_repeating" value="True"/>
+       <param name="/move_base_sequence/abortion_behaviour" value="stop"/>
     </node>  
+
+   <!--
+    <node name="move_base_sequence" pkg="move_base_sequence" type="server.py">
+       <param name="/move_base_sequence/is_repeating" value="True"/>
+       <param name="/move_base_sequence/abortion_behaviour" value="stop"/>
+    </node>
+    
 
     <node pkg="racecar_behaviors" type="balloon_detector.py" name="balloon_detector" output="screen">
        <remap from="cmd_vel" to="cmd_vel_abtr_3"/>
        <remap from="scan"    to="scan"/>
     </node> 
+    -->
+    
     
     <node pkg="racecar_behaviors" type="obstacle_detector.py" name="obstacle_detector" output="screen">
        <remap from="cmd_vel" to="cmd_vel_abtr_1"/>
