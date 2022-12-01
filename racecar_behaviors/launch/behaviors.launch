@@ -18,21 +18,18 @@
   
   <group ns="$(arg prefix)">
 
+   
     <node pkg="racecar_behaviors" type="path_planning.py" name="path_planning" output="screen">
-       <param name="max_speed" value="1"/>
-       <remap from="cmd_vel" to="cmd_vel_abtr_2"/>
-       <remap from="scan"    to="scan"/>
-       <param name="/move_base_sequence/abortion_behaviour" value="stop"/>
-    </node>  
-
-
+       <remap from="cmd_vel" to="cmd_vel_abtr_1"/>
+    </node> 
+    
 
    <!--
     <node pkg="racecar_behaviors" type="path_following.py" name="path_following" output="screen">
        <param name="max_speed" value="1"/>
        <remap from="cmd_vel" to="cmd_vel_abtr_2"/>
        <remap from="scan"    to="scan"/>
-       <param name="/move_base_sequence/abortion_behaviour" value="stop"/>
+       <remap from="odom"    to="odometry/filtered"/>
     </node> 
 
    
@@ -46,12 +43,13 @@
        <remap from="cmd_vel" to="cmd_vel_abtr_3"/>
        <remap from="scan"    to="scan"/>
     </node> 
-    -->
+   
     
     <node pkg="racecar_behaviors" type="obstacle_detector.py" name="obstacle_detector" output="screen">
        <remap from="cmd_vel" to="cmd_vel_abtr_1"/>
        <remap from="scan"    to="scan"/>
     </node>    
+     -->
             
   </group>
 

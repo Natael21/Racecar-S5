@@ -1,10 +1,4 @@
-"""
-
-Grid based Dijkstra planning
-
-author: Atsushi Sakai(@Atsushi_twi)
-
-"""
+#!/usr/bin/env python
 
 import matplotlib.pyplot as plt
 import math
@@ -14,6 +8,7 @@ import math
 import numpy as np
 
 from geometry_msgs.msg import Twist
+from geometry_msgs.msg import geometry_msgs
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 
@@ -29,12 +24,20 @@ import cv2
 from nav_msgs.srv import GetMap
 from libbehaviors import *
 
-show_animation = True
+show_animation = False
 
 
 ##########################################################################################################################################
 ##################################                     DIJKSTRA   START                ###################################################
 ##########################################################################################################################################
+
+"""
+
+Grid based Dijkstra planning
+
+author: Atsushi Sakai(@Atsushi_twi)
+
+"""
 
 class Dijkstra:
 
@@ -241,12 +244,9 @@ class Dijkstra:
 
 k = 0.5  # control gain
 Kp = 1.0  # speed proportional gain
-dt = 0.1  # [s] time difference
-L = 2.9  # [m] Wheel base of vehicle
+dt = 0.01  # [s] time difference
+L = 0.5  # [m] Wheel base of vehicle
 max_steer = np.radians(30.0)  # [rad] max steering angle
-
-show_animation = True
-
 
 class State(object):
     """
@@ -260,11 +260,22 @@ class State(object):
 
     def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
         """Instantiate the object."""
+        self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
         super(State, self).__init__()
         self.x = x
         self.y = y
         self.yaw = yaw
         self.v = v
+
+    def publish_cmd_vel(self, v, yaw):
+        
+        twist = Twist()
+        twist.linear.x = v
+        twist.angular.z = yaw
+           
+        self.cmd_vel_pub.publish(twist);
+
+    
 
     def update(self, acceleration, delta):
         """
@@ -367,49 +378,18 @@ def calc_target_index(state, cx, cy):
 #############################                     PATH-TRACKING  END                   ###################################################
 ##########################################################################################################################################
 
-def main():
-    print(__file__ + " start!!")
 
 
+
+def algo_dikjstra(grid):
     ##############################################################################
-    ############################ BRUSHFIRE ALGORITHM #############################
+    ############################ DIKJSTRA ALGORITHM ##############################
     ##############################################################################
-
-    prefix = "racecar"
-    rospy.wait_for_service(prefix + '/get_map')
-    try:
-        get_map = rospy.ServiceProxy(prefix + '/get_map', GetMap)
-        response = get_map()
-    except (rospy.ServiceException) as e:
-        print("Service call failed: %s"%e)
-        return
-    
-    rospy.loginfo("Got map=%dx%d resolution=%f", response.map.info.height, response.map.info.width, response.map.info.resolution)    
-    grid = np.reshape(response.map.data, [response.map.info.height, response.map.info.width])
-    
-    brushfireMap = brushfire(grid)
-        
-    # Export brusfire map for visualization
-    # Adjust color: 0 (black) = obstacle, 10-255 (white) = safest cells
-    maximum = np.amax(brushfireMap)
-    if maximum > 1:
-        mask = brushfireMap==1; 
-        brushfireMap = brushfireMap.astype(float) / float(maximum) *225.0 + 30.0
-        brushfireMap[mask] = 0
-        # Flip image to get x->up, y->left (like top view in RVIZ looking towards x-axis)
-        cv2.imwrite('brushfire.bmp', cv2.transpose(cv2.flip(brushfireMap, -1)))
-        rospy.loginfo("Exported brushfire.bmp")
-    else:
-        rospy.loginfo("brushfire failed! Is brusfire implemented?")
-    
-    # Flip image to get x->up, y->left (like top view in RVIZ looking towards x-axis)
-    cv2.imwrite('map.bmp', cv2.transpose(cv2.flip(grid, -1))) 
-    rospy.loginfo("Exported map.bmp")
-
-
     # start and goal position
     sx = 3.0  # [m]
     sy = 3.0  # [m]
+    # sx = 9.0  # [m]
+    # sy = 3.5  # [m]
     gx = 13.5 + sx # [m] ################################# GOAL-POSITION #########################################
     gy = 2.1 + sy # [m] ################################# GOAL-POSITION #########################################
     grid_size = 0.9  # [m]
@@ -417,24 +397,6 @@ def main():
 
     # set obstacle positions
     ox, oy = [], []
-    # for i in range(-10, 60):
-    #     ox.append(i)
-    #     oy.append(-10.0)
-    # for i in range(-10, 60):
-    #     ox.append(60.0)
-    #     oy.append(i)
-    # for i in range(-10, 61):
-    #     ox.append(i)
-    #     oy.append(60.0)
-    # for i in range(-10, 61):
-    #     ox.append(-10.0)
-    #     oy.append(i)
-    # for i in range(-10, 40):
-    #     ox.append(20.0)
-    #     oy.append(i)
-    # for i in range(0, 40):
-    #     ox.append(40.0)
-    #     oy.append(60.0 - i)
     
     for x in range(0, 210) :
         for y in range(0, 397) :
@@ -460,28 +422,79 @@ def main():
         plt.pause(0.01)
         plt.show()
 
+    print("DIKJSTRA DONE")
 
-    #####################################################
-    #####           PATH_TRACKING START #################
-    #####################################################
+    return rx, ry
 
-    """Plot an example of Stanley steering control on a cubic spline."""
-    #  target course
-    #ax = [0.0, 100.0, 100.0, 50.0, 60.0]
-    #ay = [0.0, 0.0, -30.0, -20.0, 0.0]
+
+
+def algo_brushfire():
+    ##############################################################################
+    ############################ BRUSHFIRE ALGORITHM #############################
+    ##############################################################################
+
+    prefix = "racecar"
+    rospy.wait_for_service(prefix + '/get_map')
+    
+    try:
+        get_map = rospy.ServiceProxy(prefix + '/get_map', GetMap)
+        response = get_map()
+    except (rospy.ServiceException) as e:
+        print("Service call failed: %s"%e)
+        return
+
+    print("MAP READ")
+    
+    rospy.loginfo("Got map=%dx%d resolution=%f", response.map.info.height, response.map.info.width, response.map.info.resolution)    
+    grid = np.reshape(response.map.data, [response.map.info.height, response.map.info.width])
+    
+    brushfireMap = brushfire(grid)
+        
+    # Export brusfire map for visualization
+    # Adjust color: 0 (black) = obstacle, 10-255 (white) = safest cells
+    maximum = np.amax(brushfireMap)
+    if maximum > 1:
+        mask = brushfireMap==1; 
+        brushfireMap = brushfireMap.astype(float) / float(maximum) *225.0 + 30.0
+        brushfireMap[mask] = 0
+        # Flip image to get x->up, y->left (like top view in RVIZ looking towards x-axis)
+        cv2.imwrite('brushfire.bmp', cv2.transpose(cv2.flip(brushfireMap, -1)))
+        rospy.loginfo("Exported brushfire.bmp")
+    else:
+        rospy.loginfo("brushfire failed! Is brusfire implemented?")
+    
+    # Flip image to get x->up, y->left (like top view in RVIZ looking towards x-axis)
+    cv2.imwrite('map.bmp', cv2.transpose(cv2.flip(grid, -1))) 
+    rospy.loginfo("Exported map.bmp")
+    print("Exported map.bmp")
+
+    return grid
+
+def algo_path_tracking(rx, ry):
+    ##################################################################
+    ##############      PATH_TRACKING ALGORITHM      #################
+    ##################################################################
 
     ax = rx
     ay = ry
 
+    ax.reverse()
+    ay.reverse()
+
+    print(ax)
+    print(ay)
+
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
         ax, ay, ds=0.1)
 
-    target_speed = 2  # [m/s]
+    print("PATH-TRACKING CALCULATED")
+
+    target_speed = 10  # [m/s]
 
     max_simulation_time = 500.0
 
     # Initial state
-    state = State(x=0.0, y=0.0, yaw=np.radians(0.0), v=0.0)
+    state = State(x=ax[0], y=ay[0], yaw=np.radians(45.0), v=0.0)
 
     last_idx = len(cx) - 1
     time = 0.0
@@ -504,6 +517,12 @@ def main():
         yaw.append(state.yaw) ############################## STEERING OF VEHICLE #######################
         v.append(state.v)  ############################## SPEED OF VEHICLE #######################
         t.append(time)
+
+        ############################## PUBLISH THE TWIST OF THE VEHICLE HERE #######################
+        
+        print("PUBLISH CMD-VEL START")
+
+        state.publish_cmd_vel(v, yaw)
 
         ############################## PUBLISH THE TWIST OF THE VEHICLE HERE #######################
 
@@ -538,11 +557,26 @@ def main():
         plt.ylabel("Speed[km/h]")
         plt.grid(True)
         plt.show()
-    
+
+
+def main():
+    rospy.init_node('path_planning')
+
+    print(__file__ + " start!!")
+
+    grille = algo_brushfire()
+
+    rx, ry = algo_dikjstra(grille)
+
+    algo_path_tracking(rx, ry)
+
     rospy.spin()
 
 
 
 if __name__ == '__main__':
-    rospy.init_node('path_planning')
-    main()
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass
+    
