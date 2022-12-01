@@ -512,7 +512,7 @@ def algo_path_tracking(rx, ry):
 
         ############################## PUBLISH THE TWIST OF THE VEHICLE HERE #######################
         
-        print("PUBLISH CMD-VEL START")
+        # print("PUBLISH CMD-VEL START")
 
         state.publish_cmd_vel(v, yaw)
 
