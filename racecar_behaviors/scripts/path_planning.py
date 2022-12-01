@@ -2,27 +2,20 @@
 
 import matplotlib.pyplot as plt
 import math
-
-import rospy
-import math 
-import numpy as np
-
-from geometry_msgs.msg import Twist
-from geometry_msgs.msg import geometry_msgs
-from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import Odometry
-
-import numpy as np
-import matplotlib.pyplot as plt
 import sys
 import pathlib
-sys.path.append(str(pathlib.Path(__file__).parent.parent.parent))
-
+import rospy
+import numpy as np
 import cubic_spline_planner
-
 import cv2
+
+from geometry_msgs.msg import Twist
 from nav_msgs.srv import GetMap
 from libbehaviors import *
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent))
+
+
 
 show_animation = False
 
@@ -433,11 +426,10 @@ def algo_brushfire():
     ############################ BRUSHFIRE ALGORITHM #############################
     ##############################################################################
 
-    prefix = "racecar"
-    rospy.wait_for_service(prefix + '/get_map')
+    rospy.wait_for_service('racecar/get_map')
     
     try:
-        get_map = rospy.ServiceProxy(prefix + '/get_map', GetMap)
+        get_map = rospy.ServiceProxy('racecar/get_map', GetMap)
         response = get_map()
     except (rospy.ServiceException) as e:
         print("Service call failed: %s"%e)
