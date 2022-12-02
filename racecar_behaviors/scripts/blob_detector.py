@@ -13,6 +13,7 @@ from sensor_msgs.msg import Image, CameraInfo
 from geometry_msgs.msg import Pose, Quaternion
 from cv_bridge import CvBridge, CvBridgeError
 from tf.transformations import euler_from_quaternion
+from geometry_msgs.msg import Twist
 from libbehaviors import *
 
 class BlobDetector:
@@ -21,12 +22,13 @@ class BlobDetector:
         self.map_frame_id = rospy.get_param('~map_frame_id', 'map')
         self.frame_id = rospy.get_param('~frame_id', 'base_link')
         self.object_frame_id = rospy.get_param('~object_frame_id', 'object')
-        self.color_hue = rospy.get_param('~color_hue', 10) # 160=purple, 100=blue, 10=Orange
+        self.color_hue = rospy.get_param('~color_hue', 110) # 160=purple, 100=blue, 10=Orange
         self.color_range = rospy.get_param('~color_range', 15) 
         self.color_saturation = rospy.get_param('~color_saturation', 50) 
         self.color_value = rospy.get_param('~color_value', 50) 
         self.border = rospy.get_param('~border', 10) 
         self.config_srv = Server(BlobDetectorConfig, self.config_callback)
+
         
         params = cv2.SimpleBlobDetector_Params()
         # see https://www.geeksforgeeks.org/find-circles-and-ellipses-in-an-image-using-opencv-python/
@@ -66,6 +68,8 @@ class BlobDetector:
         
         self.image_pub = rospy.Publisher('image_detections', Image, queue_size=1)
         self.object_pub = rospy.Publisher('object_detected', String, queue_size=1)
+        self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+
         
         self.image_sub = message_filters.Subscriber('image', Image)
         self.depth_sub = message_filters.Subscriber('depth', Image)
@@ -164,11 +168,12 @@ class BlobDetector:
                 print(e)
                 return
             (transBase, rotBase) = multiply_transforms(transBase, rotBase, transObj, rotObj)
-            
+
             distance = np.linalg.norm(transBase[0:2])
             angle = np.arcsin(transBase[1]/transBase[0])
-            
             rospy.loginfo("Object detected at [%f,%f] in %s frame! Distance and direction from robot: %fm %fdeg.", transMap[0], transMap[1], self.map_frame_id, distance, angle*180.0/np.pi)
+
+           # movebase_client()
 
         # debugging topic
         if self.image_pub.get_num_connections()>0:
