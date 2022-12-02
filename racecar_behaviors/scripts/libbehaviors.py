@@ -75,7 +75,7 @@ def brushfire(occupancyGrid, use8CellWindow=False):
     return mapOfWorld
     
 
-def movebase_client(goalx, goaly):
+def movebase_client(goalx, goaly, goal_theta, frame_id):
 
     print("start movebase_client")
 
@@ -89,7 +89,7 @@ def movebase_client(goalx, goaly):
 
    # Creates a new goal with the MoveBaseGoal constructor
     goal = MoveBaseGoal()
-    goal.target_pose.header.frame_id = "racecar/map"
+    goal.target_pose.header.frame_id = frame_id
     goal.target_pose.header.stamp = rospy.Time.now()
    # Move x meters forward along the x axis of the "map" coordinate frame 
     goal.target_pose.pose.position.x = goalx
@@ -97,6 +97,8 @@ def movebase_client(goalx, goaly):
     goal.target_pose.pose.position.x = goaly
    # No rotation of the mobile base frame w.r.t. map frame
     goal.target_pose.pose.orientation.w = 1.0
+
+    goal.target_pose.pose.orientation.z = goal_theta
 
    # Sends the goal to the action server.
     client.send_goal(goal)

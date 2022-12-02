@@ -557,7 +557,8 @@ def main():
 
     try:
         rospy.init_node('path_planning_py')
-        result = movebase_client(16.5, 5.1)
+        result = movebase_client(16.5, 5.1, 0.0, "racecar/map") # Pour avoir un goal par rapport à l'origine de la map
+        # result = movebase_client(2.5, 1.0, 0.0, "racecar/base_link") # Pour avoir un goal par rapport à la base mobile
         if result:
             rospy.loginfo("Goal Execution Done")
     except rospy.ROSInterruptException:
