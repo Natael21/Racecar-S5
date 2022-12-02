@@ -22,6 +22,7 @@
   
    <group ns="$(arg prefix)">
   
+    <!--
     <node pkg="racecar_behaviors" type="path_following.py" name="path_following" output="screen">
        <param name="max_speed" value="1"/>
        <remap from="cmd_vel" to="cmd_vel_abtr_2"/>
@@ -29,7 +30,7 @@
        <remap from="odom"    to="odometry/filtered"/>
     </node> 
     
-    <!--
+   
     <node pkg="racecar_behaviors" type="balloon_detector.py" name="balloon_detector" output="screen">
        <remap from="cmd_vel" to="cmd_vel_abtr_3"/>
        <remap from="scan"    to="scan"/>

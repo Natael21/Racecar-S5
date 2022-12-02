@@ -253,7 +253,7 @@ class State(object):
 
     def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
         """Instantiate the object."""
-        self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        self.cmd_vel_pub = rospy.Publisher('/racecar/cmd_vel', Twist, queue_size=1)
         super(State, self).__init__()
         self.x = x
         self.y = y
@@ -265,6 +265,9 @@ class State(object):
         twist = Twist()
         twist.linear.x = v
         twist.angular.z = yaw
+
+        print("VITESSE : ", v)
+        print("ANGLE : ", yaw)
            
         self.cmd_vel_pub.publish(twist);
 
@@ -481,9 +484,9 @@ def algo_path_tracking(rx, ry):
 
     print("PATH-TRACKING CALCULATED")
 
-    target_speed = 10  # [m/s]
+    target_speed = 1  # [m/s]
 
-    max_simulation_time = 500.0
+    max_simulation_time = 100.0
 
     # Initial state
     state = State(x=ax[0], y=ay[0], yaw=np.radians(45.0), v=0.0)
@@ -510,14 +513,6 @@ def algo_path_tracking(rx, ry):
         v.append(state.v)  ############################## SPEED OF VEHICLE #######################
         t.append(time)
 
-        ############################## PUBLISH THE TWIST OF THE VEHICLE HERE #######################
-        
-        # print("PUBLISH CMD-VEL START")
-
-        state.publish_cmd_vel(v, yaw)
-
-        ############################## PUBLISH THE TWIST OF THE VEHICLE HERE #######################
-
         if show_animation:  # pragma: no cover
             plt.cla()
             # for stopping simulation with the esc key.
@@ -530,6 +525,12 @@ def algo_path_tracking(rx, ry):
             plt.grid(True)
             plt.title("Speed[km/h]:" + str(state.v * 3.6)[:4])
             plt.pause(0.001)
+
+    ############################## PUBLISH THE TWIST OF THE VEHICLE HERE #######################
+        
+    state.publish_cmd_vel(v, yaw)
+
+    ############################## PUBLISH THE TWIST OF THE VEHICLE HERE #######################
 
     # Test
     assert last_idx >= target_idx, "Cannot reach goal"
@@ -552,23 +553,25 @@ def algo_path_tracking(rx, ry):
 
 
 def main():
-    rospy.init_node('path_planning')
-
     print(__file__ + " start!!")
 
-    grille = algo_brushfire()
+    try:
+        rospy.init_node('path_planning_py')
+        result = movebase_client(16.5, 5.1)
+        if result:
+            rospy.loginfo("Goal Execution Done")
+    except rospy.ROSInterruptException:
+        rospy.loginfo("Navigation finished")
 
-    rx, ry = algo_dikjstra(grille)
+    # grille = algo_brushfire()
 
-    algo_path_tracking(rx, ry)
+    # rx, ry = algo_dikjstra(grille)
 
-    rospy.spin()
+    # algo_path_tracking(rx, ry)
 
+    # rospy.spin()
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except rospy.ROSInterruptException:
-        pass
+    main()
     
