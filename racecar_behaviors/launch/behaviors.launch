@@ -16,7 +16,7 @@
 
    <arg name="prefix" default="racecar"/>
 
-  <node pkg="racecar_behaviors" type="path_planning.py" name="path_planning" output="screen">
+  <node pkg="racecar_behaviors" type="path_planning.py" name="path_planning_py" output="screen">
       <remap from="cmd_vel" to="cmd_vel_abtr_1"/>
    </node>      
   

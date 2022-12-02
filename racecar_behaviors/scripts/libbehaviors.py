@@ -80,7 +80,7 @@ def movebase_client(goalx, goaly):
     print("start movebase_client")
 
    # Create an action client called "move_base" with action definition file "MoveBaseAction"
-    client = actionlib.SimpleActionClient('racecar/move_base',MoveBaseAction)
+    client = actionlib.SimpleActionClient('/racecar/move_base', MoveBaseAction)
  
    # Waits until the action server has started up and started listening for goals.
     client.wait_for_server()
