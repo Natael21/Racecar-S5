@@ -15,6 +15,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from tf.transformations import euler_from_quaternion
 from geometry_msgs.msg import Twist
 from libbehaviors import *
+import math
 
 class BlobDetector:
     def __init__(self):
@@ -173,7 +174,10 @@ class BlobDetector:
             angle = np.arcsin(transBase[1]/transBase[0])
             rospy.loginfo("Object detected at [%f,%f] in %s frame! Distance and direction from robot: %fm %fdeg.", transMap[0], transMap[1], self.map_frame_id, distance, angle*180.0/np.pi)
 
-           # movebase_client()
+            x = distance * math.cos(angle)
+            y = distance * math.sin(angle)
+
+            movebase_client(x,y,angle,'racecar/base_link')
 
         # debugging topic
         if self.image_pub.get_num_connections()>0:
