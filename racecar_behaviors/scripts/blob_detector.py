@@ -29,6 +29,7 @@ class BlobDetector:
         self.color_value = rospy.get_param('~color_value', 50) 
         self.border = rospy.get_param('~border', 10) 
         self.config_srv = Server(BlobDetectorConfig, self.config_callback)
+        self.photo_baloon = True
 
         self.result = False
 
@@ -180,8 +181,53 @@ class BlobDetector:
             y = distance * math.sin(angle) + 1.1
             
             if not self.result:
-                # self.result = movebase_client(x,y,angle)
+                # statut = movebase_client(x,y,angle)
+                # print(statut)
                 print("NEW GOAL BALLOON")
+
+
+        # else:
+
+
+        #     while(self.photo_baloon == True):
+        #         distance = np.linalg.norm(transBase[0:2])
+        #         angle = np.arcsin(transBase[1]/transBase[0])
+        #         rospy.loginfo("Object detected at [%f,%f] in %s frame! Distance and direction from robot: %fm %fdeg.", transMap[0], transMap[1], self.map_frame_id, distance, angle*180.0/np.pi)
+        #         if(-1 < angle < 1):
+        #             break
+
+        #         else:
+        #             if(angle < 0):
+        #                 self.twist = Twist()
+        #                 self.twist.linear.x = 4
+        #                 self.twist.angular.z = self.cmd2rad
+
+        #             elif(angle > 0):
+        #                 self.twist = Twist()
+        #                 self.twist.linear.x = 4
+        #                 self.twist.angular.z = -self.cmd2rad
+        #             self.cmd_vel_pub.publish(self.twist)
+        
+
+        #     while(self.photo_baloon == True):
+        #         distance = np.linalg.norm(transBase[0:2])
+        #         angle = np.arcsin(transBase[1]/transBase[0])
+        #         rospy.loginfo("Object detected at [%f,%f] in %s frame! Distance and direction from robot: %fm %fdeg.", transMap[0], transMap[1], self.map_frame_id, distance, angle*180.0/np.pi)
+        #         if(0.75 < distance < 2):
+
+        #             self.photo_baloon = False
+        #             break
+
+        #         else:
+        #             self.twist = Twist()
+        #             self.twist.linear.x = 4
+        #             self.twist.angular.z = 0
+        #             self.cmd_vel_pub.publish(self.twist)
+                
+
+
+        # else:
+        #     self.photo_baloon = True
 
         # debugging topic
         if self.image_pub.get_num_connections()>0:
