@@ -10,8 +10,6 @@ import cubic_spline_planner
 import cv2
 
 from geometry_msgs.msg import PoseStamped
-from nav_msgs.srv import GetMap
-from libbehaviors import *
 from actionlib_msgs.msg import GoalStatusArray
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent))
@@ -22,6 +20,8 @@ class PathFollowing:
         self.cmd_goal = rospy.Publisher('goal_cmd', PoseStamped, queue_size=1)
         self.timer = rospy.Timer(rospy.Duration(0.1), self.timer_callback)
         self.status = 0
+        self.state = "START"
+        self.pos = "END_POINT"
 
     def set_goal(self, posx, posy, orx, ory, orz, w):
         msg_goal = PoseStamped()
@@ -44,6 +44,7 @@ class PathFollowing:
         # z = 1.0 => theta = 180
 
         self.cmd_goal.publish(msg_goal)
+        print("GOAL SENT")
 
     def call_back(self, msg):
         if msg.status_list:
@@ -55,9 +56,47 @@ class PathFollowing:
                 self.status = 3
 
     def timer_callback(self, event):
-        
-        if self.status != 3 and self.status != 1:
+
+        if self.state == "START":
+            # print("FIRST GOAL")
             self.set_goal(13.5, 2.1, 0.0, 0.0, 1.0, 0.0)
+            if self.status == 1 or self.status == 3:
+                self.state = "ON_ROUTE"
+                self.previous = "START"
+
+        elif self.state == "ON_ROUTE":
+            if self.status == 3:
+                if self.previous == "START":
+                    self.pos == "END_POINT"
+                if self.previous == "AT_GOAL":
+                    self.pos = "START_POINT"
+                self.state = "AT_GOAL"
+                self.previous = "ON_ROUTE"
+
+        elif self.state == "AT_GOAL":
+            
+            print("previous = ", self.previous, "pos = ", self.pos)
+            if self.previous == "ON_ROUTE" and self.pos == "END_POINT":
+                print("NEW GOAL")
+                self.set_goal(0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+
+                if self.status == 1:
+                    self.state = "ON_ROUTE"
+                    self.previous = "AT_GOAL"
+            else:
+                rospy.loginfo("RETURN TO ORIGIN")
+
+
+                
+
+        # if self.status != 3 and self.status != 1:
+        #     self.set_goal(13.5, 2.1, 0.0, 0.0, 1.0, 0.0)
+
+        # elif self.status == 3:
+        #     if self.status != 3 and self.status != 1: 
+        #         self.set_goal(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        #         if self.status == 1:
+        #             self.status = 0
 
         # if self.status == 3:
         #     self.set_goal(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -69,34 +108,6 @@ def main():
     rospy.init_node('path_planning_py')
 
     path = PathFollowing()
-    path.set_goal(13.5, 2.1, 0.0, 0.0, 0.0, 0.0)
-
-    # try:
-    #     get_map = rospy.ServiceProxy('racecar/get_map', GetMap)
-    #     response = get_map()
-    # except (rospy.ServiceException) as e:
-    #     print("Service call failed: %s"%e)
-    #     return
-
-    # resolution = response.map.info.resolution
-
-    # origin_x = response.map.info.origin.position.x
-    # origin_y = response.map.info.origin.position.y
-
-
-    # grid_index_x = 13.5
-    # grid_index_y = 2.1
-
-    # goalx_map = (grid_index_x - origin_x)/resolution
-    # goaly_map = (grid_index_y - origin_y)/resolution
-
-    # try:
-    #     rospy.init_node('path_planning_py')
-    #     # result = movebase_client(grid_index_x, grid_index_y, 0.0, "racecar/map") # Pour avoir un goal par rapport à l'origine de la map
-    #     if result:
-    #         rospy.loginfo("Goal Execution Done")
-    # except rospy.ROSInterruptException:
-    #     rospy.loginfo("Navigation finished")
 
     rospy.spin()
 

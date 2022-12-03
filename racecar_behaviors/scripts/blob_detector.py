@@ -180,7 +180,8 @@ class BlobDetector:
             y = distance * math.sin(angle) + 1.1
             
             if not self.result:
-                self.result = movebase_client(x,y,angle)
+                # self.result = movebase_client(x,y,angle)
+                print("NEW GOAL BALLOON")
 
         # debugging topic
         if self.image_pub.get_num_connections()>0:
