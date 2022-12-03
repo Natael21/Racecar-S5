@@ -556,8 +556,32 @@ def main():
     print(__file__ + " start!!")
 
     try:
+        get_map = rospy.ServiceProxy('racecar/get_map', GetMap)
+        response = get_map()
+    except (rospy.ServiceException) as e:
+        print("Service call failed: %s"%e)
+        return
+
+    resolution = response.map.info.resolution
+
+    print("RÉSOLUTION : ", resolution)
+
+    origin_x = response.map.info.origin.position.x
+    origin_y = response.map.info.origin.position.y
+
+
+    grid_index_x = 13.5
+    grid_index_y = 2.1
+
+    goalx_map = grid_index_x - origin_x
+    goaly_map = grid_index_y - origin_y
+
+    print("GOALX : ", goalx_map)
+    print("GOALY : ", goaly_map)
+
+    try:
         rospy.init_node('path_planning_py')
-        result = movebase_client(16.5, 5.1, 0.0, "racecar/map") # Pour avoir un goal par rapport à l'origine de la map
+        result = movebase_client(goalx_map, goaly_map, 0.0, "racecar/map") # Pour avoir un goal par rapport à l'origine de la map
         # result = movebase_client(2.5, 1.0, 0.0, "racecar/base_link") # Pour avoir un goal par rapport à la base mobile
         if result:
             rospy.loginfo("Goal Execution Done")

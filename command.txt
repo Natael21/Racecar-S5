@@ -20,5 +20,7 @@ roscd racecar_behaviors/scripts/
 
 Si on exécute le behaviors.launch :
 
+roslaunch racecar_behaviors blob_detection.launch
 roslaunch racecar_behaviors behaviors.launch
+
 

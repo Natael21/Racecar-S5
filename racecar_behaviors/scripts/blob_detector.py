@@ -30,6 +30,8 @@ class BlobDetector:
         self.border = rospy.get_param('~border', 10) 
         self.config_srv = Server(BlobDetectorConfig, self.config_callback)
 
+        self.result = False
+
         
         params = cv2.SimpleBlobDetector_Params()
         # see https://www.geeksforgeeks.org/find-circles-and-ellipses-in-an-image-using-opencv-python/
@@ -174,10 +176,11 @@ class BlobDetector:
             angle = np.arcsin(transBase[1]/transBase[0])
             rospy.loginfo("Object detected at [%f,%f] in %s frame! Distance and direction from robot: %fm %fdeg.", transMap[0], transMap[1], self.map_frame_id, distance, angle*180.0/np.pi)
 
-            x = distance * math.cos(angle)
-            y = distance * math.sin(angle)
-
-            movebase_client(x,y,angle,'racecar/base_link')
+            x = distance * math.cos(angle) + 1.1
+            y = distance * math.sin(angle) + 1.1
+            
+            if not self.result:
+                self.result = movebase_client(x,y,angle,'racecar/base_link')
 
         # debugging topic
         if self.image_pub.get_num_connections()>0:
