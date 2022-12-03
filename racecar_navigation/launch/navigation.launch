@@ -1,7 +1,7 @@
 <!-- -->
 <launch>
   <arg name="prefix"        default="racecar"/>
-  <arg name="cmd_vel_topic" default="cmd_vel_abtr_5"/>
+  <arg name="cmd_vel_topic" default="cmd_vel_abtr_2"/>
   <arg name="odom_topic"    default="odom"/>
   <arg name="use_sim_time"  default="false"/>
    
@@ -39,7 +39,7 @@
       <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
       <remap from="/odom" to="$(arg odom_topic)"/>
     </node>
-         
+       
   </group>
   
 </launch>
