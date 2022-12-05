@@ -75,13 +75,8 @@ def brushfire(occupancyGrid, use8CellWindow=False):
     return mapOfWorld
     
 # Called once when the goal completes
-<<<<<<< HEAD
-def doneCb(state, result): 
-  print("done")
-=======
 # def doneCb(state, result): 
 #   print("done")
->>>>>>> main
 
 
 # Called once when the goal becomes active
@@ -119,11 +114,7 @@ def movebase_client(goalx, goaly, goal_theta):
     goal.target_pose.pose.orientation.z = goal_theta # theta = 0
 
    # Sends the goal to the action server.
-<<<<<<< HEAD
-    client.send_goal(goal, doneCb, activeCb, feedbackCb)
-=======
     client.send_goal(goal)
->>>>>>> main
     print("goal sent")
 
    # Waits for the server to finish performing the action.

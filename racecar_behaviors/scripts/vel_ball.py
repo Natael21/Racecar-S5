@@ -42,13 +42,13 @@ class VelBall:
                 if(0.75 < goal_ball.data[1] < 2):
                     self.goal_target = False
 
-            # else:
-            #     self.twist = Twist()
-            #     self.twist.linear.x = 1
-            #     self.twist.angular.z = 0
-            #     self.vel_cmd.publish(self.twist)
-            #     if(0.75 < goal_ball.data[1] < 2):
-            #         self.goal_target = False
+            else:
+                self.twist = Twist()
+                self.twist.linear.x = 1
+                self.twist.angular.z = 0
+                self.vel_cmd.publish(self.twist)
+                if(0.75 < goal_ball.data[1] < 2):
+                    self.goal_target = False
 
 
         else:
