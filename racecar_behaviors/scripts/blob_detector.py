@@ -14,8 +14,10 @@ from geometry_msgs.msg import Pose, Quaternion
 from cv_bridge import CvBridge, CvBridgeError
 from tf.transformations import euler_from_quaternion
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float64MultiArray
 from libbehaviors import *
 import math
+import time
 
 class BlobDetector:
     def __init__(self):
@@ -30,7 +32,8 @@ class BlobDetector:
         self.border = rospy.get_param('~border', 10) 
         self.config_srv = Server(BlobDetectorConfig, self.config_callback)
 
-        self.result = False
+        # self.result = False
+        # self.photo_baloon = True
 
         
         params = cv2.SimpleBlobDetector_Params()
@@ -71,12 +74,14 @@ class BlobDetector:
         
         self.image_pub = rospy.Publisher('image_detections', Image, queue_size=1)
         self.object_pub = rospy.Publisher('object_detected', String, queue_size=1)
-        self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
-
+        # self.goal = rospy.Publisher('goal', Pose, queue_size=1)
+        # self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        self.goal = rospy.Publisher('/goal', Float64MultiArray, queue_size=1)
         
         self.image_sub = message_filters.Subscriber('image', Image)
         self.depth_sub = message_filters.Subscriber('depth', Image)
         self.info_sub = message_filters.Subscriber('camera_info', CameraInfo)
+        
         self.ts = message_filters.TimeSynchronizer([self.image_sub, self.depth_sub, self.info_sub], 10)
         self.ts.registerCallback(self.image_callback)
         
@@ -173,15 +178,118 @@ class BlobDetector:
             (transBase, rotBase) = multiply_transforms(transBase, rotBase, transObj, rotObj)
 
             distance = np.linalg.norm(transBase[0:2])
-            angle = np.arcsin(transBase[1]/transBase[0])
-            rospy.loginfo("Object detected at [%f,%f] in %s frame! Distance and direction from robot: %fm %fdeg.", transMap[0], transMap[1], self.map_frame_id, distance, angle*180.0/np.pi)
+            angle = np.arcsin(transBase[1]/transBase[0])*180.0/np.pi
+            rospy.loginfo("Object detected at [%f,%f] in %s frame! Distance and direction from robot: %fm %fdeg.", transMap[0], transMap[1], self.map_frame_id, distance, angle)
+            self.float64 = Float64MultiArray()
+            self.float64.data = [distance, angle]
+            self.goal.publish(self.float64)
 
-            x = distance * math.cos(angle) + 1.1
-            y = distance * math.sin(angle) + 1.1
+            # x = distance * math.cos(angle) + 1.1
+            # y = distance * math.sin(angle) + 1.1
             
-            if not self.result:
-                # self.result = movebase_client(x,y,angle)
-                print("NEW GOAL BALLOON")
+            # if not self.result:
+            #     self.result = movebase_client(x,y,angle)
+            #     print("NEW GOAL BALLOON")
+        #     rate = rospy.Rate(1)
+
+        #     while(self.photo_baloon == True):
+
+        #         transObj = (closestObject[0], closestObject[1], closestObject[2])
+        #         rotObj = tf.transformations.quaternion_from_euler(0, np.pi/2, -np.pi/2)
+        #         self.br.sendTransform(transObj, rotObj,
+        #                 image.header.stamp,
+        #                 self.object_frame_id,
+        #                 image.header.frame_id)  
+        #         msg = String()
+        #         msg.data = self.object_frame_id
+        #         self.object_pub.publish(msg) # signal that an object has been detected
+                
+        #         # Compute object pose in map frame
+        #         try:
+        #             self.listener.waitForTransform(self.map_frame_id, image.header.frame_id, image.header.stamp, rospy.Duration(0.5))
+        #             (transMap,rotMap) = self.listener.lookupTransform(self.map_frame_id, image.header.frame_id, image.header.stamp)
+        #         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf2_ros.TransformException) as e:
+        #             print(e)
+        #             return
+        #         (transMap, rotMap) = multiply_transforms(transMap, rotMap, transObj, rotObj)
+                
+        #         # Compute object pose in base frame
+        #         try:
+        #             self.listener.waitForTransform(self.frame_id, image.header.frame_id, image.header.stamp, rospy.Duration(0.5))
+        #             (transBase,rotBase) = self.listener.lookupTransform(self.frame_id, image.header.frame_id, image.header.stamp)
+        #         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf2_ros.TransformException) as e:
+        #             print(e)
+        #             return
+        #         (transBase, rotBase) = multiply_transforms(transBase, rotBase, transObj, rotObj)
+
+        #         distance = np.linalg.norm(transBase[0:2])
+        #         angle = np.arcsin(transBase[1]/transBase[0])
+        #         angle_deg = angle*180.0/np.pi
+        #         rospy.loginfo("Object detected at [%f,%f] in %s frame! Distance and direction from robot: %fm %fdeg.", transMap[0], transMap[1], self.map_frame_id, distance, angle*180.0/np.pi)
+        #         if(-5 < angle_deg < 5):
+        #             break
+                
+        #         else:
+        #             self.twist = Twist()
+        #             self.twist.linear.x = 1
+        #             self.twist.angular.z = angle
+        #             self.cmd_vel_pub.publish(self.twist)
+        #         rospy.loginfo("allo")
+        #         # rate.sleep()
+
+        #     while(self.photo_baloon == True):
+
+        #         transObj = (closestObject[0], closestObject[1], closestObject[2])
+        #         rotObj = tf.transformations.quaternion_from_euler(0, np.pi/2, -np.pi/2)
+        #         self.br.sendTransform(transObj, rotObj,
+        #                 image.header.stamp,
+        #                 self.object_frame_id,
+        #                 image.header.frame_id)  
+        #         msg = String()
+        #         msg.data = self.object_frame_id
+        #         self.object_pub.publish(msg) # signal that an object has been detected
+                
+        #         # Compute object pose in map frame
+        #         try:
+        #             self.listener.waitForTransform(self.map_frame_id, image.header.frame_id, image.header.stamp, rospy.Duration(0.5))
+        #             (transMap,rotMap) = self.listener.lookupTransform(self.map_frame_id, image.header.frame_id, image.header.stamp)
+        #         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf2_ros.TransformException) as e:
+        #             print(e)
+        #             return
+        #         (transMap, rotMap) = multiply_transforms(transMap, rotMap, transObj, rotObj)
+                
+        #         # Compute object pose in base frame
+        #         try:
+        #             self.listener.waitForTransform(self.frame_id, image.header.frame_id, image.header.stamp, rospy.Duration(0.5))
+        #             (transBase,rotBase) = self.listener.lookupTransform(self.frame_id, image.header.frame_id, image.header.stamp)
+        #         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf2_ros.TransformException) as e:
+        #             print(e)
+        #             return
+        #         (transBase, rotBase) = multiply_transforms(transBase, rotBase, transObj, rotObj)
+
+        #         distance = np.linalg.norm(transBase[0:2])
+        #         angle = np.arcsin(transBase[1]/transBase[0])
+        #         rospy.loginfo("Object detected at [%f,%f] in %s frame! Distance and direction from robot: %fm %fdeg.", transMap[0], transMap[1], self.map_frame_id, distance, angle*180.0/np.pi)
+        #         if(0.75 < distance < 2):
+        #             self.twist = Twist()
+        #             self.twist.linear.x = 0
+        #             self.twist.angular.z = 0
+        #             self.cmd_vel_pub.publish(self.twist)
+        #             self.photo_baloon = False
+        #             break
+
+        #         else:
+        #             self.twist = Twist()
+        #             self.twist.linear.x = 1
+        #             self.twist.angular.z = 0
+        #             self.cmd_vel_pub.publish(self.twist)
+        #         rospy.loginfo("allo2")
+        #         # rate.sleep()
+                
+
+
+        # else:
+        #     self.photo_baloon = True
 
         # debugging topic
         if self.image_pub.get_num_connections()>0:
